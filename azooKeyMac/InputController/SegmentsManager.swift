@@ -384,7 +384,7 @@ final class SegmentsManager {
 
     func getCurrentCandidateWindow(inputState: InputState) -> CandidateWindow {
         switch inputState {
-        case .english, .none, .previewing, .replaceSuggestion:
+        case .none, .previewing, .replaceSuggestion:
             return .hidden
         case .composing:
             if !self.liveConversionEnabled, let firstCandidate = self.rawCandidates?.mainResults.first {
@@ -490,7 +490,7 @@ final class SegmentsManager {
 
     func getCurrentMarkedText(inputState: InputState) -> MarkedText {
         switch inputState {
-        case .english, .none:
+        case .none:
             return MarkedText(text: [], selectionRange: .notFound)
         case .composing:
             let text = if self.lastOperation == .delete {

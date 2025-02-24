@@ -13,6 +13,7 @@ import KanaKanjiConverterModuleWithDefaultDictionary
 class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this type_name
     var segmentsManager: SegmentsManager
     private var inputState: InputState = .none
+    private var inputLanguage: InputLanguage = .japanese
     var zenzaiEnabled: Bool {
         Config.ZenzaiIntegration().value
     }
@@ -118,11 +119,11 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
     override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
         if let value = value as? NSString {
             self.client()?.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.US")
-            let directMode = value == "com.apple.inputmethod.Roman"
+            let englishMode = value == "com.apple.inputmethod.Roman"
             // 英数/かなの対応するキーが推された場合と同等のイベントを発生させる
-            let userAction: UserAction? = if directMode, self.inputState != .english {
+            let userAction: UserAction? = if englishMode, self.inputLanguage != .english {
                 .英数
-            } else if !directMode, self.inputState == .english {
+            } else if !englishMode, self.inputLanguage == .english {
                 .かな
             } else {
                 nil
@@ -131,6 +132,7 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
                 let (clientAction, clientActionCallback) = self.inputState.event(
                     eventCore: .init(modifierFlags: []),
                     userAction: userAction,
+                    inputLanguage: self.inputLanguage,
                     liveConversionEnabled: false,
                     enableDebugWindow: false,
                     enableSuggestion: false
@@ -165,15 +167,11 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
             return false
         }
 
-        let userAction = switch self.inputState {
-        case .english:
-            InputMode.getUserActionInEnglishMode(event: event)
-        case .none, .composing, .previewing, .selecting, .replaceSuggestion:
-            InputMode.getUserAction(event: event)
-        }
+        let userAction = UserAction.getUserAction(event: event, inputLanguage: inputLanguage)
         let (clientAction, clientActionCallback) = inputState.event(
             event,
             userAction: userAction,
+            inputLanguage: self.inputLanguage,
             liveConversionEnabled: Config.LiveConversion().value,
             enableDebugWindow: Config.DebugWindow().value,
             enableSuggestion: Config.EnableOpenAiApiKey().value
@@ -243,6 +241,14 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
             self.segmentsManager.requestDebugWindowMode(enabled: false)
         case .stopComposition:
             self.segmentsManager.stopComposition()
+        case .selectInputLanguage(let language):
+            self.inputLanguage = language
+            self.switchInputLanguage(language, client: client)
+        case .commitMarkedTextAndSelectInputLanguage(let language):
+            let text = self.segmentsManager.commitMarkedText(inputState: self.inputState)
+            client.insertText(text, replacementRange: NSRange(location: NSNotFound, length: 0))
+            self.inputLanguage = language
+            self.switchInputLanguage(language, client: client)
         // PredictiveSuggestion
         case .requestPredictiveSuggestion:
             // 「つづき」を直接入力し、コンテキストを渡す
@@ -276,12 +282,8 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
             if inputState != .replaceSuggestion {
                 self.replaceSuggestionWindow.orderOut(nil)
             }
-            if inputState == .english && self.inputState != .english {
-                // 日本語→英語の遷移の場合
-                self.switchInputMode(mode: .roman, client: client)
-            } else if inputState != .english && self.inputState == .english {
-                // 英語→日本語の遷移の場合
-                self.switchInputMode(mode: .japanese, client: client)
+            if inputState == .none {
+                self.switchInputLanguage(self.inputLanguage, client: client)
             }
             self.inputState = inputState
         case .basedOnBackspace(let ifIsEmpty, let ifIsNotEmpty), .basedOnSubmitCandidate(let ifIsEmpty, let ifIsNotEmpty):
@@ -293,10 +295,10 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
         return true
     }
 
-    @MainActor func switchInputMode(mode: ClientAction.InputMode, client: IMKTextInput) {
+    @MainActor func switchInputLanguage(_ language: InputLanguage, client: IMKTextInput) {
         client.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.US")
-        switch mode {
-        case .roman:
+        switch language {
+        case .english:
             client.selectMode("dev.ensan.inputmethod.azooKeyMac.Roman")
             self.segmentsManager.stopJapaneseInput()
         case .japanese:
