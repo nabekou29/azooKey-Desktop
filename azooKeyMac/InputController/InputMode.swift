@@ -1,7 +1,43 @@
 import Cocoa
 
 enum InputMode {
-
+    // swiftlint:disable:next cyclomatic_complexity
+    static func getUserActionInEnglishMode(event: NSEvent) -> UserAction {
+        // see: https://developer.mozilla.org/ja/docs/Web/API/UI_Events/Keyboard_event_code_values#mac_%E3%81%A7%E3%81%AE%E3%82%B3%E3%83%BC%E3%83%89%E5%80%A4
+        switch event.keyCode {
+        case 0x01: // 'S'
+            if event.modifierFlags.contains(.control) {
+                return .suggest
+            } else if let text = event.characters, isPrintable(text) {
+                return .input(text)
+            } else {
+                return .unknown
+            }
+        case 93: // '¥', '\'
+            if !event.modifierFlags.contains(.shift) {
+                switch (Config.TypeBackSlash().value, event.modifierFlags.contains(.option)) {
+                case (true, false), (false, true):
+                    return .input("\\")
+                case (true, true), (false, false):
+                    return .input("¥")
+                }
+            } else if let text = event.characters, isPrintable(text) {
+                return .input(text)
+            } else {
+                return .unknown
+            }
+        case 102: // Lang2/kVK_JIS_Eisu
+            return .英数
+        case 104: // Lang1/kVK_JIS_Kana
+            return .かな
+        default:
+            if let text = event.characters, isPrintable(text) {
+                return .input(text)
+            } else {
+                return .unknown
+            }
+        }
+    }
     // この種のコードは複雑にしかならないので、lintを無効にする
     // swiftlint:disable:next cyclomatic_complexity
     static func getUserAction(event: NSEvent) -> UserAction {

@@ -384,7 +384,7 @@ final class SegmentsManager {
 
     func getCurrentCandidateWindow(inputState: InputState) -> CandidateWindow {
         switch inputState {
-        case .none, .previewing, .replaceSuggestion:
+        case .english, .none, .previewing, .replaceSuggestion:
             return .hidden
         case .composing:
             if !self.liveConversionEnabled, let firstCandidate = self.rawCandidates?.mainResults.first {
@@ -422,6 +422,10 @@ final class SegmentsManager {
 
         func makeIterator() -> Array<Element>.Iterator {
             text.makeIterator()
+        }
+
+        var isEmpty: Bool {
+            self.text.isEmpty
         }
     }
 
@@ -486,7 +490,9 @@ final class SegmentsManager {
 
     func getCurrentMarkedText(inputState: InputState) -> MarkedText {
         switch inputState {
-        case .none, .composing:
+        case .english, .none:
+            return MarkedText(text: [], selectionRange: .notFound)
+        case .composing:
             let text = if self.lastOperation == .delete {
                 // 削除のあとは常にひらがなを示す
                 self.composingText.convertTarget

@@ -25,8 +25,6 @@ enum ClientAction {
     case selectPrevCandidate
     case selectNumberCandidate(Int)
 
-    case selectInputMode(InputMode)
-    case commitMarkedTextAndSelectInputMode(InputMode)
     /// MarkedTextを確定して、さらに追加で入力する
     case commitMarkedTextAndAppendToMarkedText(String)
 

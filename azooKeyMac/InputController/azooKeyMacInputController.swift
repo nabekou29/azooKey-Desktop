@@ -13,7 +13,6 @@ import KanaKanjiConverterModuleWithDefaultDictionary
 class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this type_name
     var segmentsManager: SegmentsManager
     private var inputState: InputState = .none
-    private var directMode = false
     var zenzaiEnabled: Bool {
         Config.ZenzaiIntegration().value
     }
@@ -115,12 +114,32 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
         super.deactivateServer(sender)
     }
 
-    @MainActor override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
+    @MainActor
+    override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
         if let value = value as? NSString {
             self.client()?.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.US")
-            self.directMode = value == "com.apple.inputmethod.Roman"
-            if self.directMode {
-                self.segmentsManager.stopJapaneseInput()
+            let directMode = value == "com.apple.inputmethod.Roman"
+            // 英数/かなの対応するキーが推された場合と同等のイベントを発生させる
+            let userAction: UserAction? = if directMode, self.inputState != .english {
+                .英数
+            } else if !directMode, self.inputState == .english {
+                .かな
+            } else {
+                nil
+            }
+            if let userAction {
+                let (clientAction, clientActionCallback) = self.inputState.event(
+                    eventCore: .init(modifierFlags: []),
+                    userAction: userAction,
+                    liveConversionEnabled: false,
+                    enableDebugWindow: false,
+                    enableSuggestion: false
+                )
+                _ = self.handleClientAction(
+                    clientAction,
+                    clientActionCallback: clientActionCallback,
+                    client: self.client()
+                )
             }
         }
         super.setValue(value, forTag: tag, client: sender)
@@ -142,21 +161,16 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
         guard let event, let client = sender as? IMKTextInput else {
             return false
         }
-
-        if event.type != .keyDown {
+        guard event.type == .keyDown else {
             return false
         }
 
-        switch self.handleDirectMode(event, client: client) {
-        case .done:
-            return true
-        case .break:
-            return false
-        case .continue:
-            break
+        let userAction = switch self.inputState {
+        case .english:
+            InputMode.getUserActionInEnglishMode(event: event)
+        case .none, .composing, .previewing, .selecting, .replaceSuggestion:
+            InputMode.getUserAction(event: event)
         }
-
-        let userAction = InputMode.getUserAction(event: event)
         let (clientAction, clientActionCallback) = inputState.event(
             event,
             userAction: userAction,
@@ -165,32 +179,6 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
             enableSuggestion: Config.EnableOpenAiApiKey().value
         )
         return handleClientAction(clientAction, clientActionCallback: clientActionCallback, client: client)
-    }
-
-    enum HandleDirectModeRequest {
-        /// azooKey on macOS内部で入力をハンドルした場合
-        case done
-
-        /// azooKey on macOS内部で入力をハンドルしない場合
-        case `break`
-
-        /// directModeではなかった場合
-        case `continue`
-    }
-
-    private func handleDirectMode(_ event: NSEvent, client: IMKTextInput) -> HandleDirectModeRequest {
-        if self.directMode, event.keyCode == 93, !event.modifierFlags.contains(.shift) {
-            switch (Config.TypeBackSlash().value, event.modifierFlags.contains(.option)) {
-            case (true, false), (false, true):
-                client.insertText("\\", replacementRange: .notFound)
-            case (true, true), (false, false):
-                client.insertText("¥", replacementRange: .notFound)
-            }
-            return .done
-        } else if self.directMode, event.keyCode != 104 && event.keyCode != 102 {
-            return .break
-        }
-        return .continue
     }
 
     // この種のコードは複雑にしかならないので、lintを無効にする
@@ -202,15 +190,6 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
             self.segmentsManager.requestSetCandidateWindowState(visible: true)
         case .hideCandidateWindow:
             self.segmentsManager.requestSetCandidateWindowState(visible: false)
-        case .selectInputMode(let mode):
-            client.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.US")
-            switch mode {
-            case .roman:
-                client.selectMode("dev.ensan.inputmethod.azooKeyMac.Roman")
-                self.segmentsManager.stopJapaneseInput()
-            case .japanese:
-                client.selectMode("dev.ensan.inputmethod.azooKeyMac.Japanese")
-            }
         case .enterFirstCandidatePreviewMode:
             self.segmentsManager.requestSetCandidateWindowState(visible: false)
         case .enterCandidateSelectionMode:
@@ -218,31 +197,16 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
         case .appendToMarkedText(let string):
             self.segmentsManager.insertAtCursorPosition(string, inputStyle: .roman2kana)
         case .insertWithoutMarkedText(let string):
-            assert(self.inputState == .none)
             client.insertText(string, replacementRange: NSRange(location: NSNotFound, length: 0))
         case .editSegment(let count):
             self.segmentsManager.editSegment(count: count)
         case .commitMarkedText:
             let text = self.segmentsManager.commitMarkedText(inputState: self.inputState)
             client.insertText(text, replacementRange: NSRange(location: NSNotFound, length: 0))
-            self.segmentsManager.stopComposition()
         case .commitMarkedTextAndAppendToMarkedText(let string):
             let text = self.segmentsManager.commitMarkedText(inputState: self.inputState)
             client.insertText(text, replacementRange: NSRange(location: NSNotFound, length: 0))
-            self.segmentsManager.stopComposition()
             self.segmentsManager.insertAtCursorPosition(string, inputStyle: .roman2kana)
-        case .commitMarkedTextAndSelectInputMode(let mode):
-            let text = self.segmentsManager.commitMarkedText(inputState: self.inputState)
-            client.insertText(text, replacementRange: NSRange(location: NSNotFound, length: 0))
-            self.segmentsManager.stopComposition()
-            client.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.US")
-            switch mode {
-            case .roman:
-                client.selectMode("dev.ensan.inputmethod.azooKeyMac.Roman")
-                self.segmentsManager.stopJapaneseInput()
-            case .japanese:
-                client.selectMode("dev.ensan.inputmethod.azooKeyMac.Japanese")
-            }
         case .submitSelectedCandidate:
             self.submitSelectedCandidate()
         case .submitSelectedCandidateAndAppendToMarkedText(let string):
@@ -298,7 +262,8 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
             self.replaceSuggestionWindow.orderOut(nil)
         // MARK: 特殊ケース
         case .consume:
-            return true
+            // 何もせず先に進む
+            break
         case .fallthrough:
             return false
         }
@@ -311,6 +276,13 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
             if inputState != .replaceSuggestion {
                 self.replaceSuggestionWindow.orderOut(nil)
             }
+            if inputState == .english && self.inputState != .english {
+                // 日本語→英語の遷移の場合
+                self.switchInputMode(mode: .roman, client: client)
+            } else if inputState != .english && self.inputState == .english {
+                // 英語→日本語の遷移の場合
+                self.switchInputMode(mode: .japanese, client: client)
+            }
             self.inputState = inputState
         case .basedOnBackspace(let ifIsEmpty, let ifIsNotEmpty), .basedOnSubmitCandidate(let ifIsEmpty, let ifIsNotEmpty):
             self.inputState = self.segmentsManager.isEmpty ? ifIsEmpty : ifIsNotEmpty
@@ -319,6 +291,17 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
         self.refreshMarkedText()
         self.refreshCandidateWindow()
         return true
+    }
+
+    @MainActor func switchInputMode(mode: ClientAction.InputMode, client: IMKTextInput) {
+        client.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.US")
+        switch mode {
+        case .roman:
+            client.selectMode("dev.ensan.inputmethod.azooKeyMac.Roman")
+            self.segmentsManager.stopJapaneseInput()
+        case .japanese:
+            client.selectMode("dev.ensan.inputmethod.azooKeyMac.Japanese")
+        }
     }
 
     func refreshCandidateWindow() {
