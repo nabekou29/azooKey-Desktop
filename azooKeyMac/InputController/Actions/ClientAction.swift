@@ -25,8 +25,9 @@ enum ClientAction {
     case selectPrevCandidate
     case selectNumberCandidate(Int)
 
-    case selectInputMode(InputMode)
-    case commitMarkedTextAndSelectInputMode(InputMode)
+    case selectInputLanguage(InputLanguage)
+    case commitMarkedTextAndSelectInputLanguage(InputLanguage)
+
     /// MarkedTextを確定して、さらに追加で入力する
     case commitMarkedTextAndAppendToMarkedText(String)
 
@@ -55,11 +56,6 @@ enum ClientAction {
     case hideReplaceSuggestionWindow
 
     case stopComposition
-
-    enum InputMode {
-        case roman
-        case japanese
-    }
 }
 
 enum ClientActionCallback {

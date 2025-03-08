@@ -1,18 +1,30 @@
 import Cocoa
 
-enum InputMode {
-
+extension UserAction {
     // この種のコードは複雑にしかならないので、lintを無効にする
     // swiftlint:disable:next cyclomatic_complexity
-    static func getUserAction(event: NSEvent) -> UserAction {
+    static func getUserAction(event: NSEvent, inputLanguage: InputLanguage) -> UserAction {
         // see: https://developer.mozilla.org/ja/docs/Web/API/UI_Events/Keyboard_event_code_values#mac_%E3%81%A7%E3%81%AE%E3%82%B3%E3%83%BC%E3%83%89%E5%80%A4
+        let keyMap: (String) -> String = switch inputLanguage {
+        case .english: { $0 }
+        case .japanese:
+            if Config.TypeCommaAndPeriod().value {
+                {
+                    KeyMap.h2zMap($0)
+                        .replacingOccurrences(of: "、", with: "，")
+                        .replacingOccurrences(of: "。", with: "．")
+                }
+            } else {
+                KeyMap.h2zMap
+            }
+        }
         switch event.keyCode {
         case 0x04: // 'H'
             // Ctrl + H is binding for backspace
             if event.modifierFlags.contains(.control) {
                 return .backspace
             } else if let text = event.characters, isPrintable(text) {
-                return .input(KeyMap.h2zMap(text))
+                return .input(keyMap(text))
             } else {
                 return .unknown
             }
@@ -20,7 +32,7 @@ enum InputMode {
             if event.modifierFlags.contains(.control) {
                 return .navigation(.up)
             } else if let text = event.characters, isPrintable(text) {
-                return .input(KeyMap.h2zMap(text))
+                return .input(keyMap(text))
             } else {
                 return .unknown
             }
@@ -28,7 +40,7 @@ enum InputMode {
             if event.modifierFlags.contains(.control) {
                 return .navigation(.down)
             } else if let text = event.characters, isPrintable(text) {
-                return .input(KeyMap.h2zMap(text))
+                return .input(keyMap(text))
             } else {
                 return .unknown
             }
@@ -36,7 +48,7 @@ enum InputMode {
             if event.modifierFlags.contains(.control) {
                 return .navigation(.right)
             } else if let text = event.characters, isPrintable(text) {
-                return .input(KeyMap.h2zMap(text))
+                return .input(keyMap(text))
             } else {
                 return .unknown
             }
@@ -44,7 +56,7 @@ enum InputMode {
             if event.modifierFlags.contains(.control) {
                 return .editSegment(-1)  // Shift segment cursor left
             } else if let text = event.characters, isPrintable(text) {
-                return .input(KeyMap.h2zMap(text))
+                return .input(keyMap(text))
             } else {
                 return .unknown
             }
@@ -52,7 +64,7 @@ enum InputMode {
             if event.modifierFlags.contains(.control) {
                 return .editSegment(1)  // Shift segment cursor right
             } else if let text = event.characters, isPrintable(text) {
-                return .input(KeyMap.h2zMap(text))
+                return .input(keyMap(text))
             } else {
                 return .unknown
             }
@@ -60,7 +72,7 @@ enum InputMode {
             if event.modifierFlags.contains(.control) {
                 return .function(.six)
             } else if let text = event.characters, isPrintable(text) {
-                return .input(KeyMap.h2zMap(text))
+                return .input(keyMap(text))
             } else {
                 return .unknown
             }
@@ -68,7 +80,7 @@ enum InputMode {
             if event.modifierFlags.contains(.control) {
                 return .function(.seven)
             } else if let text = event.characters, isPrintable(text) {
-                return .input(KeyMap.h2zMap(text))
+                return .input(keyMap(text))
             } else {
                 return .unknown
             }
@@ -76,7 +88,7 @@ enum InputMode {
             if event.modifierFlags.contains(.control) {
                 return .suggest
             } else if let text = event.characters, isPrintable(text) {
-                return .input(KeyMap.h2zMap(text))
+                return .input(keyMap(text))
             } else {
                 return .unknown
             }
@@ -93,37 +105,31 @@ enum InputMode {
         case 93: // Yen
             switch (Config.TypeBackSlash().value, event.modifierFlags.contains(.shift), event.modifierFlags.contains(.option)) {
             case (_, true, _):
-                return .input(KeyMap.h2zMap("|"))
+                return .input(keyMap("|"))
             case (true, false, false), (false, false, true):
-                return .input(KeyMap.h2zMap("\\"))
+                return .input(keyMap("\\"))
             case (true, false, true), (false, false, false):
-                return .input(KeyMap.h2zMap("¥"))
+                return .input(keyMap("¥"))
             }
         case 43: // Comma
-            switch (Config.TypeCommaAndPeriod().value, event.modifierFlags.contains(.shift)) {
-            case (true, false):
-                return .input(KeyMap.h2zMap("，"))
-            case (false, false):
-                return .input(KeyMap.h2zMap("、"))
-            case (_, true):
+            if event.modifierFlags.contains(.shift) {
                 if let text = event.characters, isPrintable(text) {
-                    return .input(KeyMap.h2zMap(text))
+                    return .input(keyMap(text))
                 } else {
                     return .unknown
                 }
+            } else {
+                return .input(keyMap(","))
             }
         case 47: // Period
-            switch (Config.TypeCommaAndPeriod().value, event.modifierFlags.contains(.shift)) {
-            case (true, false):
-                return .input(KeyMap.h2zMap("．"))
-            case (false, false):
-                return .input(KeyMap.h2zMap("。"))
-            case (_, true):
+            if event.modifierFlags.contains(.shift) {
                 if let text = event.characters, isPrintable(text) {
-                    return .input(KeyMap.h2zMap(text))
+                    return .input(keyMap(text))
                 } else {
                     return .unknown
                 }
+            } else {
+                return .input(keyMap("."))
             }
         case 97: // F6
             return .function(.six)
@@ -164,7 +170,7 @@ enum InputMode {
             }
         default:
             if let text = event.characters, isPrintable(text) {
-                return .input(KeyMap.h2zMap(text))
+                return .input(keyMap(text))
             } else {
                 return .unknown
             }

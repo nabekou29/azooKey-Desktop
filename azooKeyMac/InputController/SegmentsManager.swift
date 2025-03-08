@@ -423,6 +423,10 @@ final class SegmentsManager {
         func makeIterator() -> Array<Element>.Iterator {
             text.makeIterator()
         }
+
+        var isEmpty: Bool {
+            self.text.isEmpty
+        }
     }
 
     @MainActor
@@ -486,7 +490,9 @@ final class SegmentsManager {
 
     func getCurrentMarkedText(inputState: InputState) -> MarkedText {
         switch inputState {
-        case .none, .composing:
+        case .none:
+            return MarkedText(text: [], selectionRange: .notFound)
+        case .composing:
             let text = if self.lastOperation == .delete {
                 // 削除のあとは常にひらがなを示す
                 self.composingText.convertTarget

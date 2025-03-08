@@ -7,11 +7,34 @@ enum InputState {
     case selecting
     case replaceSuggestion
 
-    // この種のコードは複雑にしかならないので、lintを無効にする
-    // swiftlint:disable:next cyclomatic_complexity
-    func event(
+    struct EventCore: Sendable, Equatable {
+        var modifierFlags: NSEvent.ModifierFlags
+    }
+
+    func event(  // swiftlint:disable:this function_parameter_count
         _ event: NSEvent!,
         userAction: UserAction,
+        inputLanguage: InputLanguage,
+        liveConversionEnabled: Bool,
+        enableDebugWindow: Bool,
+        enableSuggestion: Bool
+    ) -> (ClientAction, ClientActionCallback) {
+        self.event(
+            eventCore: EventCore(modifierFlags: event.modifierFlags),
+            userAction: userAction,
+            inputLanguage: inputLanguage,
+            liveConversionEnabled: liveConversionEnabled,
+            enableDebugWindow: enableDebugWindow,
+            enableSuggestion: enableSuggestion
+        )
+    }
+
+    // この種のコードは複雑にしかならないので、lintを無効にする
+    // swiftlint:disable:next cyclomatic_complexity
+    func event(  // swiftlint:disable:this function_parameter_count
+        eventCore event: EventCore,
+        userAction: UserAction,
+        inputLanguage: InputLanguage,
         liveConversionEnabled: Bool,
         enableDebugWindow: Bool,
         enableSuggestion: Bool
@@ -28,19 +51,29 @@ enum InputState {
         case .none:
             switch userAction {
             case .input(let string):
-                return (.appendToMarkedText(string), .transition(.composing))
+                switch inputLanguage {
+                case .japanese:
+                    return (.appendToMarkedText(string), .transition(.composing))
+                case .english:
+                    return (.insertWithoutMarkedText(string), .fallthrough)
+                }
             case .number(let number):
-                return (.appendToMarkedText(number.inputString), .transition(.composing))
+                switch inputLanguage {
+                case .japanese:
+                    return (.appendToMarkedText(number.inputString), .transition(.composing))
+                case .english:
+                    return (.insertWithoutMarkedText(number.inputString), .fallthrough)
+                }
             case .かな:
-                return (.selectInputMode(.japanese), .transition(.none))
+                return (.selectInputLanguage(.japanese), .fallthrough)
             case .英数:
-                return (.selectInputMode(.roman), .transition(.none))
+                return (.selectInputLanguage(.english), .fallthrough)
             case .space:
                 // Shift+Spaceでは半角スペースを入力
-                if event.modifierFlags.contains(.shift) {
-                    return (.insertWithoutMarkedText(" "), .transition(.none))
+                if inputLanguage == .english || event.modifierFlags.contains(.shift) {
+                    return (.insertWithoutMarkedText(" "), .fallthrough)
                 } else {
-                    return (.insertWithoutMarkedText("　"), .transition(.none))
+                    return (.insertWithoutMarkedText("　"), .fallthrough)
                 }
             case .suggest:
                 if enableSuggestion {
@@ -79,9 +112,9 @@ enum InputState {
                     return (.submitHankakuKatakanaCandidate, .transition(.none))
                 }
             case .かな:
-                return (.selectInputMode(.japanese), .fallthrough)
+                return (.consume, .fallthrough)
             case .英数:
-                return (.commitMarkedTextAndSelectInputMode(.roman), .transition(.none))
+                return (.commitMarkedTextAndSelectInputLanguage(.english), .transition(.none))
             case .navigation(let direction):
                 if direction == .down {
                     return (.enterCandidateSelectionMode, .transition(.selecting))
@@ -128,9 +161,9 @@ enum InputState {
                     return (.submitHankakuKatakanaCandidate, .transition(.none))
                 }
             case .かな:
-                return (.selectInputMode(.japanese), .fallthrough)
+                return (.consume, .fallthrough)
             case .英数:
-                return (.commitMarkedTextAndSelectInputMode(.roman), .transition(.none))
+                return (.commitMarkedTextAndSelectInputLanguage(.english), .transition(.none))
             case .navigation(let direction):
                 if direction == .down {
                     return (.enterCandidateSelectionMode, .transition(.selecting))
@@ -208,9 +241,9 @@ enum InputState {
             case .editSegment(let count):
                 return (.editSegment(count), .transition(.selecting))
             case .かな:
-                return (.selectInputMode(.japanese), .fallthrough)
+                return (.consume, .fallthrough)
             case .英数:
-                return (.commitMarkedTextAndSelectInputMode(.roman), .transition(.none))
+                return (.commitMarkedTextAndSelectInputLanguage(.english), .transition(.none))
             case .unknown, .suggest, .tab:
                 return (.fallthrough, .fallthrough)
             }
@@ -235,6 +268,8 @@ enum InputState {
                 return (.submitReplaceSuggestionCandidate, .transition(.none))
             case .backspace, .escape:
                 return (.hideReplaceSuggestionWindow, .transition(.composing))
+            case .英数:
+                return (.submitReplaceSuggestionCandidate, .transition(.none))
             default:
                 return (.fallthrough, .fallthrough)
             }
