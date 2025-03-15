@@ -1,10 +1,3 @@
-//
-//  SegmentsManager.swift
-//  azooKeyMac
-//
-//  Created by miwa on 2024/08/10.
-//
-
 import Foundation
 import InputMethodKit
 import KanaKanjiConverterModuleWithDefaultDictionary
@@ -21,9 +14,6 @@ final class SegmentsManager {
     }
     private var liveConversionEnabled: Bool {
         Config.LiveConversion().value
-    }
-    private var englishConversionEnabled: Bool {
-        Config.EnglishConversion().value
     }
     private var userDictionary: Config.UserDictionary.Value {
         Config.UserDictionary().value
@@ -126,7 +116,7 @@ final class SegmentsManager {
             requireJapanesePrediction: false,
             requireEnglishPrediction: false,
             keyboardLanguage: .ja_JP,
-            englishCandidateInRoman2KanaInput: self.englishConversionEnabled,
+            englishCandidateInRoman2KanaInput: false,
             learningType: Config.Learning().value.learningType,
             memoryDirectoryURL: self.azooKeyMemoryDir,
             sharedContainerURL: self.azooKeyMemoryDir,

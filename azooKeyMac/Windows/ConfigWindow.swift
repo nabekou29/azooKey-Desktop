@@ -1,15 +1,7 @@
-//
-//  ConfigWindow.swift
-//  azooKeyMac
-//
-//  Created by miwa on 2024/04/23.
-//
-
 import SwiftUI
 
 struct ConfigWindow: View {
     @ConfigState private var liveConversion = Config.LiveConversion()
-    @ConfigState private var englishConversion = Config.EnglishConversion()
     @ConfigState private var typeBackSlash = Config.TypeBackSlash()
     @ConfigState private var typeCommaAndPeriod = Config.TypeCommaAndPeriod()
     @ConfigState private var zenzai = Config.ZenzaiIntegration()
@@ -102,7 +94,6 @@ struct ConfigWindow: View {
                         }
                         Divider()
                         Toggle("ライブ変換を有効化", isOn: $liveConversion)
-                        Toggle("英単語変換を有効化", isOn: $englishConversion)
                         Toggle("円記号の代わりにバックスラッシュを入力", isOn: $typeBackSlash)
                         Toggle("「、」「。」の代わりに「，」「．」を入力", isOn: $typeCommaAndPeriod)
                         Divider()
