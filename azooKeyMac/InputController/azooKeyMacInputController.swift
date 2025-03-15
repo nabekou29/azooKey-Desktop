@@ -1,10 +1,3 @@
-//
-//  azooKeyMacInputController.swift
-//  azooKeyMacInputController
-//
-//  Created by ensan on 2021/09/07.
-//
-
 import Cocoa
 import InputMethodKit
 import KanaKanjiConverterModuleWithDefaultDictionary
@@ -20,14 +13,10 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
     var liveConversionEnabled: Bool {
         Config.LiveConversion().value
     }
-    var englishConversionEnabled: Bool {
-        Config.EnglishConversion().value
-    }
 
     var appMenu: NSMenu
     var zenzaiToggleMenuItem: NSMenuItem
     var liveConversionToggleMenuItem: NSMenuItem
-    var englishConversionToggleMenuItem: NSMenuItem
 
     private var candidatesWindow: NSWindow
     private var candidatesViewController: CandidatesViewController
@@ -41,7 +30,6 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
         self.appMenu = NSMenu(title: "azooKey")
         self.zenzaiToggleMenuItem = NSMenuItem()
         self.liveConversionToggleMenuItem = NSMenuItem()
-        self.englishConversionToggleMenuItem = NSMenuItem()
 
         // Initialize the candidates window
         self.candidatesViewController = CandidatesViewController()
@@ -89,7 +77,6 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
         self.prepareApplicationSupportDirectory()
         self.updateZenzaiToggleMenuItem(newValue: self.zenzaiEnabled)
         self.updateLiveConversionToggleMenuItem(newValue: self.liveConversionEnabled)
-        self.updateEnglishConversionToggleMenuItem(newValue: self.englishConversionEnabled)
         self.segmentsManager.activate()
 
         if let client = sender as? IMKTextInput {
