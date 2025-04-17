@@ -84,6 +84,14 @@ extension UserAction {
             } else {
                 return .unknown
             }
+        case 0x29: // Control + ;
+            if event.modifierFlags.contains(.control) {
+                return .function(.eight)
+            } else if let text = event.characters, isPrintable(text) {
+                return .input(keyMap(text))
+            } else {
+                return .unknown
+            }
         case 0x01: // Control + s
             if event.modifierFlags.contains(.control) {
                 return .suggest
