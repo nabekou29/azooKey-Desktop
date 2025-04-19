@@ -1,4 +1,5 @@
 import Cocoa
+import Core
 
 extension UserAction {
     // この種のコードは複雑にしかならないので、lintを無効にする
