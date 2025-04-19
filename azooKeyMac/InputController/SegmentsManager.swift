@@ -1,3 +1,4 @@
+import Core
 import Foundation
 import InputMethodKit
 import KanaKanjiConverterModuleWithDefaultDictionary

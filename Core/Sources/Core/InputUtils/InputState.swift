@@ -1,17 +1,20 @@
 import InputMethodKit
 
-enum InputState {
+public enum InputState: Sendable, Hashable {
     case none
     case composing
     case previewing
     case selecting
     case replaceSuggestion
 
-    struct EventCore: Sendable, Equatable {
+    public struct EventCore: Sendable, Equatable {
+        public init(modifierFlags: NSEvent.ModifierFlags) {
+            self.modifierFlags = modifierFlags
+        }
         var modifierFlags: NSEvent.ModifierFlags
     }
 
-    func event(  // swiftlint:disable:this function_parameter_count
+    public func event(  // swiftlint:disable:this function_parameter_count
         _ event: NSEvent!,
         userAction: UserAction,
         inputLanguage: InputLanguage,
@@ -31,7 +34,7 @@ enum InputState {
 
     // この種のコードは複雑にしかならないので、lintを無効にする
     // swiftlint:disable:next cyclomatic_complexity
-    func event(  // swiftlint:disable:this function_parameter_count
+    public func event(  // swiftlint:disable:this function_parameter_count
         eventCore event: EventCore,
         userAction: UserAction,
         inputLanguage: InputLanguage,
