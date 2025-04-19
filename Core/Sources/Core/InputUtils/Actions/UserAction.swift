@@ -1,4 +1,4 @@
-enum UserAction {
+public enum UserAction {
     case input(String)
     case backspace
     case enter
@@ -14,17 +14,17 @@ enum UserAction {
     case editSegment(Int)
     case suggest
 
-    enum NavigationDirection {
+    public enum NavigationDirection: Sendable, Equatable, Hashable {
         case up, down, right, left
     }
 
-    enum Function {
+    public enum Function: Sendable, Equatable, Hashable {
         case six, seven, eight
     }
 
-    enum Number {
+    public enum Number: Sendable, Equatable, Hashable {
         case one, two, three, four, five, six, seven, eight, nine, zero
-        var intValue: Int {
+        public var intValue: Int {
             switch self {
             case .one: 1
             case .two: 2
@@ -39,7 +39,7 @@ enum UserAction {
             }
         }
 
-        var inputString: String {
+        public var inputString: String {
             switch self {
             case .one: "1"
             case .two: "2"
