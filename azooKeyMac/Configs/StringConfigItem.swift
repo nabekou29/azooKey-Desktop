@@ -41,3 +41,11 @@ extension Config {
         static var key: String = "dev.ensan.inputmethod.azooKeyMac.preference.ZenzaiProfile"
     }
 }
+
+extension Config {
+    /// OpenAIモデル名
+    struct OpenAiModelName: StringConfigItem {
+        static var `default`: String = "gpt-4o-mini"
+        static var key: String = "dev.ensan.inputmethod.azooKeyMac.preference.OpenAiModelName"
+    }
+}

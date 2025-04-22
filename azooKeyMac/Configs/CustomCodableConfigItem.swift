@@ -103,7 +103,6 @@ extension Config {
         ])
         static let key: String = "dev.ensan.inputmethod.azooKeyMac.preference.user_dictionary_temporal2"
     }
-
 }
 
 extension Config {

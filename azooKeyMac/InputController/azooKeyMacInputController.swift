@@ -467,8 +467,10 @@ extension azooKeyMacInputController {
         self.segmentsManager.appendDebugMessage("プロンプト取得成功: \(prompt) << \(composingText)")
 
         let apiKey = Config.OpenAiApiKey().value
-        let request = OpenAIRequest(prompt: prompt, target: composingText)
-        self.segmentsManager.appendDebugMessage("APIリクエスト準備完了: prompt=\(prompt), target=\(composingText)")
+        let modelName = Config.OpenAiModelName().value
+        let request = OpenAIRequest(prompt: prompt, target: composingText, modelName: modelName)
+        self.segmentsManager.appendDebugMessage("APIリクエスト準備完了: prompt=\(prompt), target=\(composingText), modelName=\(modelName)")
+        self.segmentsManager.appendDebugMessage("Using OpenAI Model: \(modelName)")
 
         // 非同期タスクでリクエストを送信
         Task {

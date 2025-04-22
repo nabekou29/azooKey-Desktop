@@ -9,6 +9,7 @@ struct ConfigWindow: View {
     @ConfigState private var zenzaiPersonalizationLevel = Config.ZenzaiPersonalizationLevel()
     @ConfigState private var enableOpenAiApiKey = Config.EnableOpenAiApiKey()
     @ConfigState private var openAiApiKey = Config.OpenAiApiKey()
+    @ConfigState private var openAiModelName = Config.OpenAiModelName()
     @ConfigState private var learning = Config.Learning()
     @ConfigState private var inferenceLimit = Config.ZenzaiInferenceLimit()
     @ConfigState private var debugWindow = Config.DebugWindow()
@@ -110,6 +111,8 @@ struct ConfigWindow: View {
                                 isPresented: $openAiApiKeyPopover
                             )
                         }
+                        TextField("OpenAI Model Name", text: $openAiModelName, prompt: Text("例: gpt-4o-mini"))
+                            .disabled(!$enableOpenAiApiKey.wrappedValue)
                     }
                 }
                 Spacer()
