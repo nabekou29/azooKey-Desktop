@@ -58,9 +58,10 @@ class CandidatesViewController: BaseCandidateViewController {
         cell.candidateTextField.attributedStringValue = attributedString
     }
 
-    func selectNumberCandidate(num: Int) {
+    func selectNumberCandidate(num: Int) -> Int {
         let nextRow = self.showedRows.lowerBound + num - 1
         self.updateSelection(to: nextRow)
+        return nextRow
     }
 
     func hide() {
