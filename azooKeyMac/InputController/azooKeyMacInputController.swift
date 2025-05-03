@@ -209,8 +209,9 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
         case .selectNextCandidate:
             self.segmentsManager.requestSelectingNextCandidate()
         case .selectNumberCandidate(let num):
-            self.candidatesViewController.selectNumberCandidate(num: num)
+            self.segmentsManager.requestSelectingRow(self.candidatesViewController.getNumberCandidate(num: num))
             self.submitSelectedCandidate()
+            self.segmentsManager.requestResettingSelection()
         case .submitHiraganaCandidate:
             self.submitCandidate(self.segmentsManager.getModifiedRubyCandidate {
                 $0.toHiragana()
