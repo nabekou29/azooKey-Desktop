@@ -3,6 +3,9 @@
 
 import PackageDescription
 
+let gitTag: String = "\"" + (Context.gitInformation?.currentTag ?? "unknown") + "\""
+let gitCommit: String = "\"" + (Context.gitInformation?.currentCommit ?? "unknown") + "\""
+
 let package = Package(
     name: "Core",
     platforms: [.macOS(.v13)],
@@ -24,7 +27,12 @@ let package = Package(
         .target(
             name: "Metadata",
             cSettings: [
-                .define("GIT_TAG", to: (Context.gitInformation?.currentTag ?? Context.gitInformation?.currentCommit).map { "\"" + $0 + "\"" } ),
+                .define(
+                    "GIT_TAG", to: gitTag
+                ),
+                .define(
+                    "GIT_COMMIT", to: gitCommit
+                ),
             ]
         ),
         .target(
