@@ -1,3 +1,4 @@
+import Core
 import SwiftUI
 
 struct ConfigWindow: View {
@@ -113,6 +114,15 @@ struct ConfigWindow: View {
                         }
                         TextField("OpenAI Model Name", text: $openAiModelName, prompt: Text("例: gpt-4o-mini"))
                             .disabled(!$enableOpenAiApiKey.wrappedValue)
+                        LabeledContent("Version") {
+                            Text(PackageMetadata.gitTag ?? PackageMetadata.gitCommit ?? "Unknown Version")
+                                .monospaced()
+                                .bold()
+                                .copyable([
+                                    PackageMetadata.gitTag ?? PackageMetadata.gitCommit ?? "Unknown Version"
+                                ])
+                        }
+                        .textSelection(.enabled)
                     }
                 }
                 Spacer()
