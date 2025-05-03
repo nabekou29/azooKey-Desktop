@@ -112,6 +112,16 @@ final class SegmentsManager {
         }
     }
 
+    private var metadata: ConvertRequestOptions.Metadata {
+        if let tag = PackageMetadata.gitTag {
+            .init(versionString: "azooKey on macOS (\(tag))")
+        } else if let commit = PackageMetadata.gitCommit {
+            .init(versionString: "azooKey on macOS (\(commit.prefix(7)))")
+        } else {
+            .init(versionString: "azooKey on macOS (unknown version)")
+        }
+    }
+
     private func options(leftSideContext: String? = nil, requestRichCandidates: Bool = false) -> ConvertRequestOptions {
         .withDefaultDictionary(
             requireJapanesePrediction: false,
@@ -122,7 +132,7 @@ final class SegmentsManager {
             memoryDirectoryURL: self.azooKeyMemoryDir,
             sharedContainerURL: self.azooKeyMemoryDir,
             zenzaiMode: self.zenzaiMode(leftSideContext: leftSideContext, requestRichCandidates: requestRichCandidates),
-            metadata: .init(versionString: "azooKey on macOS / α version")
+            metadata: self.metadata
         )
     }
 
