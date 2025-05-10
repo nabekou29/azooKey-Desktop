@@ -129,7 +129,8 @@ struct ConfigWindow: View {
             }
             Spacer()
         }
-        .frame(minWidth: 500)
+        .fixedSize()
+        .frame(width: 500)
     }
 }
 
