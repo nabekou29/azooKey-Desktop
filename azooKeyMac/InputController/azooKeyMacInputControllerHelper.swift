@@ -5,7 +5,7 @@ extension azooKeyMacInputController {
     // MARK: - Settings and Menu Items
 
     func setupMenu() {
-        self.zenzaiToggleMenuItem = NSMenuItem(title: "Zenzai（ニューラル変換）", action: #selector(self.toggleZenzai(_:)), keyEquivalent: "")
+        self.zenzaiToggleMenuItem = NSMenuItem(title: "Zenzai（ニューラルかな漢字変換）", action: #selector(self.toggleZenzai(_:)), keyEquivalent: "")
         self.liveConversionToggleMenuItem = NSMenuItem(title: "ライブ変換", action: #selector(self.toggleLiveConversion(_:)), keyEquivalent: "")
         self.appMenu.addItem(self.zenzaiToggleMenuItem)
         self.appMenu.addItem(self.liveConversionToggleMenuItem)
