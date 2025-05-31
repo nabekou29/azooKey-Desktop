@@ -23,7 +23,7 @@ extension azooKeyMacInputController {
 
     func updateZenzaiToggleMenuItem(newValue: Bool) {
         self.zenzaiToggleMenuItem.state = newValue ? .on : .off
-        self.zenzaiToggleMenuItem.title = "Zenzai（ニューラル変換）"
+        self.zenzaiToggleMenuItem.title = "Zenzai（ニューラルかな変換）"
     }
 
     @objc func toggleLiveConversion(_ sender: Any) {
