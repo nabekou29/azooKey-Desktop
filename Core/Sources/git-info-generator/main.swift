@@ -13,8 +13,8 @@ let outputPath = CommandLine.arguments[1]
 let contents = """
 // This file is auto-generated.
 
-let gitTagFromPlugin = \(tag as String?)
-let gitCommitFromPlugin = \(commit as String?)
+let gitTagFromPlugin: String? = \(tag as String?)
+let gitCommitFromPlugin: String? = \(commit as String?)
 """
 
 try contents.write(toFile: outputPath, atomically: true, encoding: .utf8)
