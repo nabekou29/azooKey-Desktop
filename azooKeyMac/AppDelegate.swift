@@ -83,6 +83,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Insert code here to initialize your application
         self.server = IMKServer(name: Bundle.main.infoDictionary?["InputMethodConnectionName"] as? String, bundleIdentifier: Bundle.main.bundleIdentifier)
         NSLog("tried connection")
+
+        // Check if mainMenu exists, or create it
+        if NSApp.mainMenu == nil {
+            NSApp.mainMenu = NSMenu()
+        }
+
+        // Add an Edit menu
+        let editMenu = NSMenuItem(title: "Edit", action: nil, keyEquivalent: "")
+        NSApp.mainMenu?.addItem(editMenu)
+        let editSubmenu = NSMenu(title: "Edit")
+        editMenu.submenu = editSubmenu
+
+        // Add standard Edit actions
+        editSubmenu.addItem(withTitle: "Undo", action: Selector(("undo:")), keyEquivalent: "z")
+        editSubmenu.addItem(withTitle: "Redo", action: Selector(("redo:")), keyEquivalent: "Z")
+        editSubmenu.addItem(NSMenuItem.separator())
+        editSubmenu.addItem(withTitle: "Cut", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+        editSubmenu.addItem(withTitle: "Copy", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        editSubmenu.addItem(withTitle: "Paste", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        editSubmenu.addItem(withTitle: "Select All", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
     }
 
     func applicationWillTerminate(_ notification: Notification) {
