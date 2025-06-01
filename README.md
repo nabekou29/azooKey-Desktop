@@ -18,6 +18,19 @@ macOS 14とmacOS 15で動作確認しています。macOS 13でも利用でき�
 - 「設定」>「キーボード」>「入力ソース」を編集>「+」ボタン>「日本語」>azooKeyを追加>完了
 - メニューバーアイコンからazooKeyを選択
 
+### Install with Homebrew
+または、Homebrewを用いてインストールすることもできます。
+
+```bash
+brew install azooKey
+```
+この場合も上記のログアウト・再ログイン後の設定は必要です。
+アップグレードは以下のコマンドで実行できます。
+
+```bash
+brew upgrade azooKey
+```
+
 ## コミュニティ
 
 azooKey on macOSの開発に参加したい方、使い方に質問がある方、要望や不具合報告がある方は、ぜひ[azooKeyのDiscordサーバ](https://discord.gg/dY9gHuyZN5)にご参加ください。
