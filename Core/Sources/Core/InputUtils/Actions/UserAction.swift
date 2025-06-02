@@ -13,6 +13,7 @@ public enum UserAction {
     case number(Number)
     case editSegment(Int)
     case suggest
+    case forget
 
     public enum NavigationDirection: Sendable, Equatable, Hashable {
         case up, down, right, left

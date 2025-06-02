@@ -230,6 +230,8 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
             self.segmentsManager.requestDebugWindowMode(enabled: false)
         case .stopComposition:
             self.segmentsManager.stopComposition()
+        case .forgetMemory:
+            self.segmentsManager.forgetMemory()
         case .selectInputLanguage(let language):
             self.inputLanguage = language
             self.switchInputLanguage(language, client: client)
