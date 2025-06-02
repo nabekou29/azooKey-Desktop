@@ -114,7 +114,11 @@ extension UserAction {
                 return .space(prefersFullWidthWhenInput: false)
             }
         case 51: // Delete
-            return .backspace
+            if event.modifierFlags.contains(.control) {
+                return .forget
+            } else {
+                return .backspace
+            }
         case 53: // Escape
             return .escape
         case 93: // Yen

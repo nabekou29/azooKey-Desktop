@@ -247,6 +247,14 @@ final class SegmentsManager {
         self.updateRawCandidate()
     }
 
+    @MainActor
+    func forgetMemory() {
+        if let selectedCandidate {
+            self.kanaKanjiConverter.sendToDicdataStore(.forgetMemory(selectedCandidate))
+            self.appendDebugMessage("\(#function): forget \(selectedCandidate.data.map {$0.word})")
+        }
+    }
+
     private var candidates: [Candidate]? {
         if let rawCandidates {
             if !self.didExperienceSegmentEdition {

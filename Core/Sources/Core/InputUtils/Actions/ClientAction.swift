@@ -40,6 +40,9 @@ public enum ClientAction {
     case enableDebugWindow
     case disableDebugWindow
 
+    /// 学習のリセット
+    case forgetMemory
+
     // Fnキーでの変換
     case submitKatakanaCandidate
     case submitHiraganaCandidate
