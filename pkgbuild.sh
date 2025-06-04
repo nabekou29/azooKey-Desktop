@@ -48,6 +48,9 @@ xcrun stapler staple "${APP_PATH}"
 
 # Remove the temporary zip
 rm "${APP_ZIP}"
+rm ${EXPORT_PATH}/Packaging.log
+rm ${EXPORT_PATH}/DistributionSummary.plist
+rm ${EXPORT_PATH}/ExportOptions.plist
 
 # Suppose we have build/azooKeyMac.app
 # Use this script to create a plist package for distribution
