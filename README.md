@@ -65,6 +65,8 @@ GitHub Sponsorsをご利用ください。
 
 ### 開発版のビルド・デバッグ
 
+まず、想定環境が整っていることを確認してください。 git-lfs のない状態では正しく clone できません。
+
 cloneする際には`--recursive`をつけてサブモジュールまでローカルに落としてください。
 
 ```bash
@@ -88,6 +90,9 @@ git submodule update --init
 `install.sh`でビルドが成功しない場合、以下をご確認ください。
 
 * XcodeのGUI上で「Team ID」を変更する必要がある場合があります
+  * `azooKeyMac.xcodeproj` を Xcode で開く
+  * azooKeyMac -> Signing & Capabilities から、 Team を Personal Team に変更する
+  * リポジトリ内の全てのバンドルIDを、適当な文字列に置換 (ex: `dev.ensan.inputmethod.azooKeyMac` -> `dev.yourname.inputmethod.azooKeyMac`)
 * 「Packages are not supported when using legacy build locations, but the current project has them enabled.」と表示される場合は[https://qiita.com/glassmonkey/items/3e8203900b516878ff2c](https://qiita.com/glassmonkey/items/3e8203900b516878ff2c)を参考に、Xcodeの設定をご確認ください
 
 変換精度がリリース版に比べて悪いと感じた場合、以下をご確認ください。
