@@ -233,15 +233,26 @@ enum OpenAIError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "Invalid URL"
+            return "Could not connect to OpenAI service. Please check your internet connection."
         case .noServerResponse:
-            return "No response from server"
-        case .invalidResponseStatus(let code, let body):
-            return "Invalid response from server. Status code: \(code), Response body: \(body)"
-        case .parseError(let message):
-            return "Parse error: \(message)"
-        case .invalidResponseStructure(let received):
-            return "Failed to parse response structure. Received: \(received)"
+            return "OpenAI service is not responding. Please try again later."
+        case .invalidResponseStatus(let code, _):
+            switch code {
+            case 401:
+                return "OpenAI API key is invalid. Please check your API key in preferences."
+            case 403:
+                return "Access denied by OpenAI. Please check your API key permissions."
+            case 429:
+                return "OpenAI rate limit exceeded. Please wait a moment and try again."
+            case 500...599:
+                return "OpenAI service is temporarily unavailable. Please try again later."
+            default:
+                return "OpenAI request failed. Please try again later."
+            }
+        case .parseError:
+            return "Could not understand OpenAI response. Please try again."
+        case .invalidResponseStructure:
+            return "Received unexpected response from OpenAI. Please try again."
         }
     }
 }
@@ -249,7 +260,7 @@ enum OpenAIError: LocalizedError {
 // OpenAI APIクライアント
 enum OpenAIClient {
     // APIリクエストを送信する静的メソッド
-    static func sendRequest(_ request: OpenAIRequest, apiKey: String, segmentsManager: SegmentsManager) async throws -> [String] {
+    static func sendRequest(_ request: OpenAIRequest, apiKey: String, logger: ((String) -> Void)? = nil) async throws -> [String] {
         guard let url = URL(string: "https://api.openai.com/v1/chat/completions") else {
             throw OpenAIError.invalidURL
         }
@@ -276,18 +287,18 @@ enum OpenAIClient {
         }
 
         // レスポンスデータの解析
-        return try parseResponseData(data, segmentsManager: segmentsManager)
+        return try parseResponseData(data, logger: logger)
     }
 
     // レスポンスデータのパースを行う静的メソッド
-    private static func parseResponseData(_ data: Data, segmentsManager: SegmentsManager) throws -> [String] {
-        segmentsManager.appendDebugMessage("Received JSON response")
+    private static func parseResponseData(_ data: Data, logger: ((String) -> Void)? = nil) throws -> [String] {
+        logger?("Received JSON response")
 
         let jsonObject: Any
         do {
             jsonObject = try JSONSerialization.jsonObject(with: data)
         } catch {
-            segmentsManager.appendDebugMessage("Failed to parse JSON response")
+            logger?("Failed to parse JSON response")
             throw OpenAIError.parseError("Failed to parse response")
         }
 
@@ -303,28 +314,77 @@ enum OpenAIClient {
                 continue
             }
 
-            segmentsManager.appendDebugMessage("Raw content string: \(contentString)")
+            logger?("Raw content string: \(contentString)")
 
             guard let contentData = contentString.data(using: .utf8) else {
-                segmentsManager.appendDebugMessage("Failed to convert `content` string to data")
+                logger?("Failed to convert `content` string to data")
                 continue
             }
 
             do {
                 guard let parsedContent = try JSONSerialization.jsonObject(with: contentData) as? [String: [String]],
                       let predictions = parsedContent["predictions"] else {
-                    segmentsManager.appendDebugMessage("Failed to parse `content` as expected JSON dictionary: \(contentString)")
+                    logger?("Failed to parse `content` as expected JSON dictionary: \(contentString)")
                     continue
                 }
 
-                segmentsManager.appendDebugMessage("Parsed predictions: \(predictions)")
+                logger?("Parsed predictions: \(predictions)")
                 allPredictions.append(contentsOf: predictions)
             } catch {
-                segmentsManager.appendDebugMessage("Error parsing JSON from `content`: \(error.localizedDescription)")
+                logger?("Error parsing JSON from `content`: \(error.localizedDescription)")
             }
         }
 
         return allPredictions
+    }
+
+    // Simple text transformation method for AI Transform feature
+    static func sendTextTransformRequest(prompt: String, modelName: String, apiKey: String) async throws -> String {
+        guard let url = URL(string: "https://api.openai.com/v1/chat/completions") else {
+            throw OpenAIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = [
+            "model": modelName,
+            "messages": [
+                ["role": "system", "content": "You are a helpful assistant that transforms text according to user instructions."],
+                ["role": "user", "content": prompt]
+            ],
+            "max_tokens": 150,
+            "temperature": 0.7
+        ]
+
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        // Send async request
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        // Validate response
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw OpenAIError.noServerResponse
+        }
+
+        guard httpResponse.statusCode == 200 else {
+            let responseBody = String(bytes: data, encoding: .utf8) ?? "Body is not encoded in UTF-8"
+            throw OpenAIError.invalidResponseStatus(code: httpResponse.statusCode, body: responseBody)
+        }
+
+        // Parse response data
+        let jsonObject = try JSONSerialization.jsonObject(with: data)
+        guard let jsonDict = jsonObject as? [String: Any],
+              let choices = jsonDict["choices"] as? [[String: Any]],
+              let firstChoice = choices.first,
+              let message = firstChoice["message"] as? [String: Any],
+              let content = message["content"] as? String else {
+            throw OpenAIError.invalidResponseStructure(jsonObject)
+        }
+
+        return content.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 

@@ -25,6 +25,9 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
     private var replaceSuggestionWindow: NSWindow
     private var replaceSuggestionsViewController: ReplaceSuggestionsViewController
 
+    var promptInputWindow: PromptInputWindow
+    var isPromptWindowVisible: Bool = false
+
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
         self.segmentsManager = SegmentsManager()
 
@@ -44,7 +47,6 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
         }
         rect.size = .init(width: 400, height: 1000)
         self.candidatesWindow.setFrame(rect, display: true)
-        // init直後はこれを表示しない
         self.candidatesWindow.setIsVisible(false)
         self.candidatesWindow.orderOut(nil)
 
@@ -61,6 +63,9 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
         self.replaceSuggestionWindow.setFrame(rect, display: true)
         self.replaceSuggestionWindow.setIsVisible(false)
         self.replaceSuggestionWindow.orderOut(nil)
+
+        // PromptInputWindowの初期化
+        self.promptInputWindow = PromptInputWindow()
 
         super.init(server: server, delegate: delegate, client: inputClient)
 
@@ -156,6 +161,26 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
         }
 
         let userAction = UserAction.getUserAction(event: event, inputLanguage: inputLanguage)
+
+        // Handle suggest action with selected text check (prevent recursive calls)
+        if case .suggest = userAction {
+            // Prevent recursive window calls
+            if self.isPromptWindowVisible {
+                self.segmentsManager.appendDebugMessage("Suggest action ignored: prompt window already visible")
+                return true
+            }
+
+            let selectedRange = client.selectedRange()
+            self.segmentsManager.appendDebugMessage("Suggest action detected. Selected range: \(selectedRange)")
+            if selectedRange.length > 0 {
+                self.segmentsManager.appendDebugMessage("Selected text found, showing prompt input window")
+                // There is selected text, show prompt input window
+                return self.handleClientAction(.showPromptInputWindow, clientActionCallback: .fallthrough, client: client)
+            } else {
+                self.segmentsManager.appendDebugMessage("No selected text, using normal suggest behavior")
+            }
+        }
+
         let (clientAction, clientActionCallback) = inputState.event(
             event,
             userAction: userAction,
@@ -257,6 +282,13 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
         case .hideReplaceSuggestionWindow:
             self.replaceSuggestionWindow.setIsVisible(false)
             self.replaceSuggestionWindow.orderOut(nil)
+        // Selected Text Transform
+        case .showPromptInputWindow:
+            self.segmentsManager.appendDebugMessage("Executing showPromptInputWindow")
+            self.showPromptInputWindow()
+        case .transformSelectedText(let selectedText, let prompt):
+            self.segmentsManager.appendDebugMessage("Executing transformSelectedText with text: '\(selectedText)' and prompt: '\(prompt)'")
+            self.transformSelectedText(selectedText: selectedText, prompt: prompt)
         // MARK: 特殊ケース
         case .consume:
             // 何もせず先に進む
@@ -479,7 +511,9 @@ extension azooKeyMacInputController {
         Task {
             do {
                 self.segmentsManager.appendDebugMessage("APIリクエスト送信中...")
-                let predictions = try await OpenAIClient.sendRequest(request, apiKey: apiKey, segmentsManager: segmentsManager)
+                let predictions = try await OpenAIClient.sendRequest(request, apiKey: apiKey, logger: { [weak self] message in
+                    self?.segmentsManager.appendDebugMessage(message)
+                })
                 self.segmentsManager.appendDebugMessage("APIレスポンス受信成功: \(predictions)")
 
                 // String配列からCandidate配列に変換
@@ -510,7 +544,6 @@ extension azooKeyMacInputController {
                 }
             } catch {
                 self.segmentsManager.appendDebugMessage("APIリクエストエラー: \(error.localizedDescription)")
-                print("APIリクエストエラー: \(error.localizedDescription)")
             }
         }
         self.segmentsManager.appendDebugMessage("requestReplaceSuggestion: 終了")
@@ -547,4 +580,5 @@ extension azooKeyMacInputController {
             retryCount = 0
         }
     }
+
 }
