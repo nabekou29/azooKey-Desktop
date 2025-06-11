@@ -47,27 +47,57 @@ class BaseCandidateViewController: NSViewController {
     internal var currentSelectedRow: Int = -1
 
     override func loadView() {
+        // 親ビュー（ZStackのような役割）
+        let containerView = NSView()
+        containerView.translatesAutoresizingMaskIntoConstraints = false
+
+        // Material View（背景）
+        let materialView = NSVisualEffectView()
+        materialView.blendingMode = .behindWindow
+        materialView.material = .underWindowBackground
+        materialView.state = .active
+        materialView.translatesAutoresizingMaskIntoConstraints = false
+
+        // Scroll View（前面）
         let scrollView = NSScrollView()
         self.tableView = NonClickableTableView()
         self.tableView.style = .plain
         scrollView.documentView = self.tableView
         scrollView.hasVerticalScroller = true
-
-        // デフォルトでスクロールバーを非表示に
         scrollView.verticalScroller?.controlSize = .mini
         scrollView.scrollerStyle = .overlay
+        scrollView.drawsBackground = false
+        scrollView.backgroundColor = .clear
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
 
+        // 重ね順に応じて subviews を構成（背面 → 前面）
+        containerView.subviews = [materialView, scrollView]
+
+        // 制約
+        NSLayoutConstraint.activate([
+            materialView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            materialView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            materialView.topAnchor.constraint(equalTo: containerView.topAnchor),
+            materialView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
+
+            scrollView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            scrollView.topAnchor.constraint(equalTo: containerView.topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
+        ])
+
+        self.tableView.backgroundColor = .clear
         self.tableView.gridStyleMask = .solidHorizontalGridLineMask
-        self.view = scrollView
 
+        // テーブルビューの構成
         let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("CandidatesColumn"))
         self.tableView.headerView = nil
         self.tableView.addTableColumn(column)
         self.tableView.delegate = self
         self.tableView.dataSource = self
-
-        // 選択スタイルの設定
         self.tableView.selectionHighlightStyle = .regular
+
+        self.view = containerView
     }
 
     override func viewDidLoad() {
