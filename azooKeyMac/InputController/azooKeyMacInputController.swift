@@ -104,8 +104,8 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
             if let client = sender as? IMKTextInput {
                 client.insertText(text, replacementRange: NSRange(location: NSNotFound, length: 0))
             }
-            self.refreshMarkedText() // クライアントのmarkedTextを確実にクリア
             self.inputState = .none // 状態をリセット
+            self.refreshMarkedText() // クライアントのmarkedTextを確実にクリア
         }
         self.segmentsManager.deactivate()
         self.candidatesWindow.orderOut(nil)
