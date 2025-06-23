@@ -412,6 +412,8 @@ final class SegmentsManager {
             } else {
                 return .hidden
             }
+        case .deadKeyComposition(let deadKeyChar):
+            return .hidden
         }
     }
 
@@ -498,10 +500,13 @@ final class SegmentsManager {
         suggestSelectionIndex = nil
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     func getCurrentMarkedText(inputState: InputState) -> MarkedText {
         switch inputState {
         case .none:
             return MarkedText(text: [], selectionRange: .notFound)
+        case .deadKeyComposition(let deadKeyChar):
+            return MarkedText(text: [.init(content: self.composingText.convertTarget, focus: .focused)], selectionRange: .notFound)
         case .composing:
             let text = if self.lastOperation == .delete {
                 // 削除のあとは常にひらがなを示す
@@ -537,7 +542,6 @@ final class SegmentsManager {
             } else {
                 return MarkedText(text: [.init(content: self.composingText.convertTarget, focus: .none)], selectionRange: .notFound)
             }
-
         case .replaceSuggestion:
             // サジェスト候補の選択状態を独立して管理
             if let index = suggestSelectionIndex,

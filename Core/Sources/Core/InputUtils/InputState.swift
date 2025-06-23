@@ -2,6 +2,7 @@ import InputMethodKit
 
 public enum InputState: Sendable, Hashable {
     case none
+    case deadKeyComposition(String)
     case composing
     case previewing
     case selecting
@@ -46,7 +47,10 @@ public enum InputState: Sendable, Hashable {
             return (.fallthrough, .fallthrough)
         }
         if event.modifierFlags.contains(.option) {
-            guard case .input = userAction else {
+            switch userAction {
+            case .input, .deadKey:
+                break
+            default:
                 return (.fallthrough, .fallthrough)
             }
         }
@@ -59,6 +63,12 @@ public enum InputState: Sendable, Hashable {
                     return (.appendToMarkedText(string), .transition(.composing))
                 case .english:
                     return (.insertWithoutMarkedText(string), .fallthrough)
+                }
+            case .deadKey(let deadKeyChar):
+                if inputLanguage == .english {
+                    return (.setMarkedTextAndTransition(deadKeyChar, .deadKeyComposition(deadKeyChar)), .fallthrough)
+                } else {
+                    return (.fallthrough, .fallthrough)
                 }
             case .number(let number):
                 switch inputLanguage {
@@ -85,6 +95,25 @@ public enum InputState: Sendable, Hashable {
                 }
             case .unknown, .navigation, .backspace, .enter, .escape, .function, .editSegment, .tab, .forget, .transformSelectedText:
                 return (.fallthrough, .fallthrough)
+            }
+        case .deadKeyComposition(let deadKeyChar):
+            switch userAction {
+            case .input(let string):
+                if let result = DeadKeyComposer.combine(deadKey: deadKeyChar, with: string, shift: event.modifierFlags.contains(.shift)) {
+                    return (.commitMarkedTextAndReplaceWith(result), .transition(.none))
+                } else {
+                    return (.commitMarkedTextAndThenInsert(string), .transition(.none))
+                }
+            case .backspace, .escape:
+                return (.stopComposition, .transition(.none))
+            case .かな:
+                return (.stopCompositionAndSelectInputLanguage(.japanese), .transition(.none))
+            case .function, .英数:
+                return (.consume, .fallthrough)
+            case .tab:
+                return (.commitMarkedTextAndThenInsert("\t"), .transition(.none))
+            default:
+                return (.commitMarkedTextAndThenInsert(""), .transition(.none))
             }
         case .composing:
             switch userAction {
@@ -136,7 +165,7 @@ public enum InputState: Sendable, Hashable {
                 } else {
                     return (.fallthrough, .fallthrough)
                 }
-            case .forget, .unknown, .tab, .transformSelectedText:
+            case .forget, .unknown, .tab, .transformSelectedText, .deadKey:
                 return (.fallthrough, .fallthrough)
             }
         case .previewing:
@@ -179,7 +208,7 @@ public enum InputState: Sendable, Hashable {
                 }
             case .editSegment(let count):
                 return (.editSegment(count), .transition(.selecting))
-            case .unknown, .suggest, .tab, .forget, .transformSelectedText:
+            case .unknown, .suggest, .tab, .forget, .transformSelectedText, .deadKey:
                 return (.fallthrough, .fallthrough)
             }
         case .selecting:
@@ -248,7 +277,7 @@ public enum InputState: Sendable, Hashable {
                 return (.consume, .fallthrough)
             case .英数:
                 return (.commitMarkedTextAndSelectInputLanguage(.english), .transition(.none))
-            case .unknown, .suggest, .tab, .transformSelectedText:
+            case .unknown, .suggest, .tab, .transformSelectedText, .deadKey:
                 return (.fallthrough, .fallthrough)
             }
         case .replaceSuggestion:

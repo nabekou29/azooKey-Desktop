@@ -62,6 +62,12 @@ public enum ClientAction {
     case showPromptInputWindow
     case transformSelectedText(String, String)  // (selectedText, prompt)
 
+    // DeadKey handling
+    case setMarkedTextAndTransition(String, InputState)
+    case commitMarkedTextAndReplaceWith(String)
+    case commitMarkedTextAndThenInsert(String)
+    case stopCompositionAndSelectInputLanguage(InputLanguage)
+
     case stopComposition
 }
 

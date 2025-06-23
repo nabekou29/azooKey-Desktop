@@ -19,6 +19,22 @@ extension UserAction {
                 KeyMap.h2zMap
             }
         }
+        // Diacritic processing
+        if event.modifierFlags.contains(.option) && event.modifierFlags.isDisjoint(with: [.command, .control]) {
+            if let deadKeyInfo = DeadKeyComposer.deadKeyList[event.keyCode] {
+                if event.modifierFlags.contains(.shift) {
+                    // Shift + Option: insert diacritical mark only
+                    if let directChar = event.characters {
+                        return .input(directChar)
+                    } else {
+                        return .unknown
+                    }
+                } else {
+                    // Option only: begin dead key sequence
+                    return .deadKey(deadKeyInfo.deadKeyChar)
+                }
+            }
+        }
         switch event.keyCode {
         case 0x04: // 'H'
             // Ctrl + H is binding for backspace
