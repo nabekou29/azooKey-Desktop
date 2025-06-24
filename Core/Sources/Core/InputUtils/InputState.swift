@@ -66,7 +66,7 @@ public enum InputState: Sendable, Hashable {
                 }
             case .deadKey(let deadKeyChar):
                 if inputLanguage == .english {
-                    return (.setMarkedTextAndTransition(deadKeyChar, .deadKeyComposition(deadKeyChar)), .fallthrough)
+                    return (.transitionToDeadKeyComposition(deadKeyChar), .fallthrough)
                 } else {
                     return (.fallthrough, .fallthrough)
                 }
@@ -102,18 +102,22 @@ public enum InputState: Sendable, Hashable {
                 if let result = DeadKeyComposer.combine(deadKey: deadKeyChar, with: string, shift: event.modifierFlags.contains(.shift)) {
                     return (.commitMarkedTextAndReplaceWith(result), .transition(.none))
                 } else {
-                    return (.commitMarkedTextAndThenInsert(string), .transition(.none))
+                    return (.commitMarkedTextAndThenInsert(deadKeyChar + string), .transition(.none))
                 }
+            case .deadKey(let newDeadKeyChar):
+                return (.insertDiacriticAndTransition(deadKeyChar, .deadKeyComposition(newDeadKeyChar)), .fallthrough)
             case .backspace, .escape:
                 return (.stopComposition, .transition(.none))
             case .かな:
                 return (.stopCompositionAndSelectInputLanguage(.japanese), .transition(.none))
-            case .function, .英数:
+            case .function:
                 return (.consume, .fallthrough)
+            case .enter:
+                return (.commitMarkedTextAndThenInsert(deadKeyChar + "\n"), .transition(.none))
             case .tab:
-                return (.commitMarkedTextAndThenInsert("\t"), .transition(.none))
+                return (.commitMarkedTextAndThenInsert(deadKeyChar + "\t"), .transition(.none))
             default:
-                return (.commitMarkedTextAndThenInsert(""), .transition(.none))
+                return (.commitMarkedTextAndThenInsert(deadKeyChar), .transition(.none))
             }
         case .composing:
             switch userAction {

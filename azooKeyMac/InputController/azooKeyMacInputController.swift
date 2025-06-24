@@ -296,10 +296,11 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
             self.segmentsManager.appendDebugMessage("Executing transformSelectedText with text: '\(selectedText)' and prompt: '\(prompt)'")
             self.transformSelectedText(selectedText: selectedText, prompt: prompt)
         // DeadKey handling
-        case .setMarkedTextAndTransition(let string, let inputState):
-            self.segmentsManager.stopComposition()
-            self.segmentsManager.insertAtCursorPosition(string, inputStyle: .direct)
-            self.inputState = inputState
+        case .transitionToDeadKeyComposition(let deadKeyChar):
+            self.inputState = .deadKeyComposition(deadKeyChar)
+        case .insertDiacriticAndTransition(let string, let newState):
+            client.insertText(string, replacementRange: NSRange(location: NSNotFound, length: 0))
+            self.inputState = newState
         case .commitMarkedTextAndReplaceWith(let string):
             client.insertText(string, replacementRange: NSRange(location: NSNotFound, length: 0))
             self.segmentsManager.stopComposition()
