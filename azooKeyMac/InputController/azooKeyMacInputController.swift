@@ -73,7 +73,34 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
         self.candidatesViewController.delegate = self
         self.replaceSuggestionsViewController.delegate = self
         self.segmentsManager.delegate = self
+        // Setup XPC connection before calling super.init
+        self.setupXPCConnection()
         self.setupMenu()
+    }
+
+    // MARK: - XPC Connection to ConverterXPC
+
+    private var xpcConnection: NSXPCConnection?
+
+    func setupXPCConnection() {
+        let connection = NSXPCConnection(serviceName: "dev.ensan.inputmethod.azooKeyMac.ConverterXPC")
+        connection.remoteObjectInterface = NSXPCInterface(with: ConverterXPCProtocol.self)
+        connection.resume()
+        self.xpcConnection = connection
+    }
+
+    func callXPCExample(firstNumber: Int, secondNumber: Int, completion: @escaping (Int?) -> Void) {
+        guard let proxy = xpcConnection?.remoteObjectProxyWithErrorHandler({ error in
+            self.segmentsManager.appendDebugMessage("XPC Error: \(error.localizedDescription)")
+            completion(nil)
+        }) as? ConverterXPCProtocol else {
+            completion(nil)
+            return
+        }
+
+        proxy.performCalculation(firstNumber: firstNumber, secondNumber: secondNumber) { result in
+            completion(result)
+        }
     }
 
     @MainActor
