@@ -18,8 +18,6 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
     var appMenu: NSMenu
     var zenzaiToggleMenuItem: NSMenuItem
     var liveConversionToggleMenuItem: NSMenuItem
-    var updateMenuItem: NSMenuItem?
-    var updateURL: URL?
 
     private var candidatesWindow: NSWindow
     private var candidatesViewController: CandidatesViewController
@@ -68,7 +66,6 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
 
         // PromptInputWindowの初期化
         self.promptInputWindow = PromptInputWindow()
-        self.updateMenuItem = NSMenuItem()
 
         super.init(server: server, delegate: delegate, client: inputClient)
 
