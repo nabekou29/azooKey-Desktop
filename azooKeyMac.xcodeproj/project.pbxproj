@@ -16,6 +16,7 @@
 		551434E82D576B6600A9B5CA /* lm_c_abc.marisa in Resources */ = {isa = PBXBuildFile; fileRef = 551434E12D576B6600A9B5CA /* lm_c_abc.marisa */; };
 		551434EA2D57A8AC00A9B5CA /* ggml-model-Q5_K_M.gguf in Resources */ = {isa = PBXBuildFile; fileRef = 551434E92D57A8AC00A9B5CA /* ggml-model-Q5_K_M.gguf */; };
 		553F47C92E0FD55100BCE1AE /* ConverterXPC.xpc in Embed XPC Services */ = {isa = PBXBuildFile; fileRef = 553F47BD2E0FD55100BCE1AE /* ConverterXPC.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		553F47E12E0FDA0000BCE1AE /* ConverterServer in CopyFiles */ = {isa = PBXBuildFile; fileRef = 553F47D52E0FD91F00BCE1AE /* ConverterServer */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		554A26602DB37657003C5CFB /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = 554A265F2DB37657003C5CFB /* Core */; };
 		556C52FB2BAAAF7E00EB343F /* en.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 556C52F92BAAAF7D00EB343F /* en.tiff */; };
 		556C52FC2BAAAF7E00EB343F /* en@2x.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 556C52FA2BAAAF7D00EB343F /* en@2x.tiff */; };
@@ -59,6 +60,25 @@
 			name = "Embed XPC Services";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		553F47D32E0FD91F00BCE1AE /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		553F47E02E0FD9F400BCE1AE /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+				553F47E12E0FDA0000BCE1AE /* ConverterServer in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -76,6 +96,7 @@
 		551434E42D576B6600A9B5CA /* lm_u_xbc.marisa */ = {isa = PBXFileReference; lastKnownFileType = file; name = lm_u_xbc.marisa; path = base_n5_lm/lm_u_xbc.marisa; sourceTree = "<group>"; };
 		551434E92D57A8AC00A9B5CA /* ggml-model-Q5_K_M.gguf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "ggml-model-Q5_K_M.gguf"; path = "zenz-v3-small-gguf/ggml-model-Q5_K_M.gguf"; sourceTree = "<group>"; };
 		553F47BD2E0FD55100BCE1AE /* ConverterXPC.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = ConverterXPC.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
+		553F47D52E0FD91F00BCE1AE /* ConverterServer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ConverterServer; sourceTree = BUILT_PRODUCTS_DIR; };
 		556C52F92BAAAF7D00EB343F /* en.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = en.tiff; sourceTree = "<group>"; };
 		556C52FA2BAAAF7D00EB343F /* en@2x.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "en@2x.tiff"; sourceTree = "<group>"; };
 		55A27D012BAAADDB00512DCD /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -98,10 +119,18 @@
 			);
 			target = 1A41E61326E745D9009B65D7 /* azooKeyMac */;
 		};
+		553F47DD2E0FD93400BCE1AE /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ConverterXPCProtocol.swift,
+			);
+			target = 553F47D42E0FD91F00BCE1AE /* ConverterServer */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		553F47BE2E0FD55100BCE1AE /* ConverterXPC */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (553F47D02E0FD6CC00BCE1AE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 553F47CD2E0FD55100BCE1AE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = ConverterXPC; sourceTree = "<group>"; };
+		553F47BE2E0FD55100BCE1AE /* ConverterXPC */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (553F47D02E0FD6CC00BCE1AE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 553F47CD2E0FD55100BCE1AE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 553F47DD2E0FD93400BCE1AE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = ConverterXPC; sourceTree = "<group>"; };
+		553F47D62E0FD91F00BCE1AE /* ConverterServer */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ConverterServer; sourceTree = "<group>"; };
 		55CE06C72CB01F000002DAF1 /* InputController */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = InputController; sourceTree = "<group>"; };
 		55CE06D72CB01F080002DAF1 /* Configs */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Configs; sourceTree = "<group>"; };
 		55CE06E42CB01F130002DAF1 /* Extensions */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Extensions; sourceTree = "<group>"; };
@@ -141,6 +170,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		553F47D22E0FD91F00BCE1AE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -152,6 +188,7 @@
 				55CE06ED2CB01F160002DAF1 /* azooKeyMacTests */,
 				55CE06F12CB01F160002DAF1 /* azooKeyMacUITests */,
 				553F47BE2E0FD55100BCE1AE /* ConverterXPC */,
+				553F47D62E0FD91F00BCE1AE /* ConverterServer */,
 				1A41E61526E745D9009B65D7 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -163,6 +200,7 @@
 				1A41E62426E745DD009B65D7 /* azooKeyMacTests.xctest */,
 				1A41E62E26E745DD009B65D7 /* azooKeyMacUITests.xctest */,
 				553F47BD2E0FD55100BCE1AE /* ConverterXPC.xpc */,
+				553F47D52E0FD91F00BCE1AE /* ConverterServer */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -212,6 +250,7 @@
 				1A41E61126E745D9009B65D7 /* Frameworks */,
 				1A41E61226E745D9009B65D7 /* Resources */,
 				553F47CA2E0FD55100BCE1AE /* Embed XPC Services */,
+				553F47E02E0FD9F400BCE1AE /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -298,6 +337,28 @@
 			productReference = 553F47BD2E0FD55100BCE1AE /* ConverterXPC.xpc */;
 			productType = "com.apple.product-type.xpc-service";
 		};
+		553F47D42E0FD91F00BCE1AE /* ConverterServer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 553F47D92E0FD91F00BCE1AE /* Build configuration list for PBXNativeTarget "ConverterServer" */;
+			buildPhases = (
+				553F47D12E0FD91F00BCE1AE /* Sources */,
+				553F47D22E0FD91F00BCE1AE /* Frameworks */,
+				553F47D32E0FD91F00BCE1AE /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				553F47D62E0FD91F00BCE1AE /* ConverterServer */,
+			);
+			name = ConverterServer;
+			packageProductDependencies = (
+			);
+			productName = ConverterServer;
+			productReference = 553F47D52E0FD91F00BCE1AE /* ConverterServer */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -322,6 +383,9 @@
 					553F47BC2E0FD55100BCE1AE = {
 						CreatedOnToolsVersion = 16.4;
 					};
+					553F47D42E0FD91F00BCE1AE = {
+						CreatedOnToolsVersion = 16.4;
+					};
 				};
 			};
 			buildConfigurationList = 1A41E60F26E745D9009B65D7 /* Build configuration list for PBXProject "azooKeyMac" */;
@@ -344,6 +408,7 @@
 				1A41E62326E745DD009B65D7 /* azooKeyMacTests */,
 				1A41E62D26E745DD009B65D7 /* azooKeyMacUITests */,
 				553F47BC2E0FD55100BCE1AE /* ConverterXPC */,
+				553F47D42E0FD91F00BCE1AE /* ConverterServer */,
 			);
 		};
 /* End PBXProject section */
@@ -414,6 +479,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		553F47B92E0FD55100BCE1AE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		553F47D12E0FD91F00BCE1AE /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -795,6 +867,41 @@
 			};
 			name = Release;
 		};
+		553F47DA2E0FD91F00BCE1AE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_ENTITLEMENTS = ConverterServer/ConverterServer.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 9S3UXHYP65;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.4;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		553F47DB2E0FD91F00BCE1AE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_ENTITLEMENTS = ConverterServer/ConverterServer.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 9S3UXHYP65;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.4;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -839,6 +946,15 @@
 			buildConfigurations = (
 				553F47CB2E0FD55100BCE1AE /* Debug */,
 				553F47CC2E0FD55100BCE1AE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		553F47D92E0FD91F00BCE1AE /* Build configuration list for PBXNativeTarget "ConverterServer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				553F47DA2E0FD91F00BCE1AE /* Debug */,
+				553F47DB2E0FD91F00BCE1AE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
