@@ -12,6 +12,7 @@ struct ConfigWindow: View {
     @ConfigState private var enableOpenAiApiKey = Config.EnableOpenAiApiKey()
     @ConfigState private var openAiApiKey = Config.OpenAiApiKey()
     @ConfigState private var openAiModelName = Config.OpenAiModelName()
+    @ConfigState private var openAiApiEndpoint = Config.OpenAiApiEndpoint()
     @ConfigState private var learning = Config.Learning()
     @ConfigState private var inferenceLimit = Config.ZenzaiInferenceLimit()
     @ConfigState private var debugWindow = Config.DebugWindow()
@@ -21,6 +22,33 @@ struct ConfigWindow: View {
     @State private var zenzaiProfileHelpPopover = false
     @State private var zenzaiInferenceLimitHelpPopover = false
     @State private var openAiApiKeyPopover = false
+    @State private var connectionTestInProgress = false
+    @State private var connectionTestResult: String?
+
+    func testConnection() async {
+        connectionTestInProgress = true
+        connectionTestResult = nil
+
+        do {
+            let testRequest = OpenAIRequest(
+                prompt: "テスト",
+                target: "",
+                modelName: openAiModelName.value.isEmpty ? Config.OpenAiModelName.default : openAiModelName.value
+            )
+
+            _ = try await OpenAIClient.sendRequest(
+                testRequest,
+                apiKey: openAiApiKey.value,
+                apiEndpoint: openAiApiEndpoint.value
+            )
+
+            connectionTestResult = "接続成功"
+        } catch {
+            connectionTestResult = "接続失敗: \(error.localizedDescription)"
+        }
+
+        connectionTestInProgress = false
+    }
 
     @ViewBuilder
     private func helpButton(helpContent: LocalizedStringKey, isPresented: Binding<Bool>) -> some View {
@@ -115,6 +143,29 @@ struct ConfigWindow: View {
                     }
                     TextField("OpenAI Model Name", text: $openAiModelName, prompt: Text("例: gpt-4o-mini"))
                         .disabled(!$enableOpenAiApiKey.wrappedValue)
+                    TextField("API Endpoint", text: $openAiApiEndpoint, prompt: Text("例: https://api.openai.com/v1/chat/completions"))
+                        .disabled(!$enableOpenAiApiKey.wrappedValue)
+                        .help("例: https://api.openai.com/v1/chat/completions\nGemini: https://generativelanguage.googleapis.com/v1beta/openai/chat/completions")
+
+                    HStack {
+                        Button("接続テスト") {
+                            Task {
+                                await testConnection()
+                            }
+                        }
+                        .disabled(!$enableOpenAiApiKey.wrappedValue || connectionTestInProgress || openAiApiKey.value.isEmpty)
+
+                        if connectionTestInProgress {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        }
+                    }
+
+                    if let result = connectionTestResult {
+                        Text(result)
+                            .foregroundColor(result.contains("成功") ? .green : .red)
+                            .font(.caption)
+                    }
                     LabeledContent("Version") {
                         Text(PackageMetadata.gitTag ?? PackageMetadata.gitCommit ?? "Unknown Version")
                             .monospaced()
@@ -125,6 +176,7 @@ struct ConfigWindow: View {
                     }
                     .textSelection(.enabled)
                 }
+                .frame(width: 450)
                 Spacer()
             }
             Spacer()

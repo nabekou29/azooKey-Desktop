@@ -535,7 +535,7 @@ extension azooKeyMacInputController {
         Task {
             do {
                 self.segmentsManager.appendDebugMessage("APIリクエスト送信中...")
-                let predictions = try await OpenAIClient.sendRequest(request, apiKey: apiKey, logger: { [weak self] message in
+                let predictions = try await OpenAIClient.sendRequest(request, apiKey: apiKey, apiEndpoint: Config.OpenAiApiEndpoint().value, logger: { [weak self] message in
                     self?.segmentsManager.appendDebugMessage(message)
                 })
                 self.segmentsManager.appendDebugMessage("APIレスポンス受信成功: \(predictions)")

@@ -7,12 +7,16 @@
 
 import Foundation
 
-protocol StringConfigItem: ConfigItem<String> {}
+protocol StringConfigItem: ConfigItem<String> {
+    static var `default`: String { get }
+}
 
 extension StringConfigItem {
+    static var `default`: String { "" }
+
     var value: String {
         get {
-            UserDefaults.standard.string(forKey: Self.key) ?? ""
+            UserDefaults.standard.string(forKey: Self.key) ?? Self.default
         }
         nonmutating set {
             UserDefaults.standard.set(newValue, forKey: Self.key)
@@ -65,6 +69,12 @@ extension Config {
     struct OpenAiModelName: StringConfigItem {
         static var `default`: String = "gpt-4o-mini"
         static var key: String = "dev.ensan.inputmethod.azooKeyMac.preference.OpenAiModelName"
+    }
+
+    /// OpenAI API エンドポイント
+    struct OpenAiApiEndpoint: StringConfigItem {
+        static var `default`: String = "https://api.openai.com/v1/chat/completions"
+        static var key: String = "dev.ensan.inputmethod.azooKeyMac.preference.OpenAiApiEndpoint"
     }
 
     /// プロンプト履歴（JSON形式で保存）
