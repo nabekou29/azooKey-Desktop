@@ -43,8 +43,34 @@ struct ConfigWindow: View {
             )
 
             connectionTestResult = "接続成功"
+        } catch let error as OpenAIError {
+            connectionTestResult = switch error {
+            case .invalidURL:
+                "エラー: 無効なURL形式です"
+            case .noServerResponse:
+                "エラー: サーバーから応答がありません"
+            case .invalidResponseStatus(let code, let body):
+                switch code {
+                case 401:
+                    "エラー: APIキーが無効です"
+                case 403:
+                    "エラー: アクセスが拒否されました"
+                case 404:
+                    "エラー: エンドポイントが見つかりません"
+                case 429:
+                    "エラー: レート制限に達しました"
+                case 500...599:
+                    "エラー: サーバーエラー (コード: \(code))"
+                default:
+                    "エラー: HTTPステータス \(code)\n詳細: \(body.prefix(100))..."
+                }
+            case .parseError(let message):
+                "エラー: レスポンス解析失敗 - \(message)"
+            case .invalidResponseStructure:
+                "エラー: 予期しないレスポンス形式"
+            }
         } catch {
-            connectionTestResult = "接続失敗: \(error.localizedDescription)"
+            connectionTestResult = "エラー: \(error.localizedDescription)"
         }
 
         connectionTestInProgress = false
@@ -165,6 +191,8 @@ struct ConfigWindow: View {
                         Text(result)
                             .foregroundColor(result.contains("成功") ? .green : .red)
                             .font(.caption)
+                            .textSelection(.enabled)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     LabeledContent("Version") {
                         Text(PackageMetadata.gitTag ?? PackageMetadata.gitCommit ?? "Unknown Version")
