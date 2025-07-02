@@ -25,6 +25,38 @@ struct ConfigWindow: View {
     @State private var connectionTestInProgress = false
     @State private var connectionTestResult: String?
 
+    private func getErrorMessage(for error: OpenAIError) -> String {
+        switch error {
+        case .invalidURL:
+            return "エラー: 無効なURL形式です"
+        case .noServerResponse:
+            return "エラー: サーバーから応答がありません"
+        case .invalidResponseStatus(let code, let body):
+            return getHTTPErrorMessage(code: code, body: body)
+        case .parseError(let message):
+            return "エラー: レスポンス解析失敗 - \(message)"
+        case .invalidResponseStructure:
+            return "エラー: 予期しないレスポンス形式"
+        }
+    }
+
+    private func getHTTPErrorMessage(code: Int, body: String) -> String {
+        switch code {
+        case 401:
+            return "エラー: APIキーが無効です"
+        case 403:
+            return "エラー: アクセスが拒否されました"
+        case 404:
+            return "エラー: エンドポイントが見つかりません"
+        case 429:
+            return "エラー: レート制限に達しました"
+        case 500...599:
+            return "エラー: サーバーエラー (コード: \(code))"
+        default:
+            return "エラー: HTTPステータス \(code)\n詳細: \(body.prefix(100))..."
+        }
+    }
+
     func testConnection() async {
         connectionTestInProgress = true
         connectionTestResult = nil
@@ -44,31 +76,7 @@ struct ConfigWindow: View {
 
             connectionTestResult = "接続成功"
         } catch let error as OpenAIError {
-            connectionTestResult = switch error {
-            case .invalidURL:
-                "エラー: 無効なURL形式です"
-            case .noServerResponse:
-                "エラー: サーバーから応答がありません"
-            case .invalidResponseStatus(let code, let body):
-                switch code {
-                case 401:
-                    "エラー: APIキーが無効です"
-                case 403:
-                    "エラー: アクセスが拒否されました"
-                case 404:
-                    "エラー: エンドポイントが見つかりません"
-                case 429:
-                    "エラー: レート制限に達しました"
-                case 500...599:
-                    "エラー: サーバーエラー (コード: \(code))"
-                default:
-                    "エラー: HTTPステータス \(code)\n詳細: \(body.prefix(100))..."
-                }
-            case .parseError(let message):
-                "エラー: レスポンス解析失敗 - \(message)"
-            case .invalidResponseStructure:
-                "エラー: 予期しないレスポンス形式"
-            }
+            connectionTestResult = getErrorMessage(for: error)
         } catch {
             connectionTestResult = "エラー: \(error.localizedDescription)"
         }
