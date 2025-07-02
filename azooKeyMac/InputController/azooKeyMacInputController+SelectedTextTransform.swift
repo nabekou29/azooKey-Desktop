@@ -213,7 +213,8 @@ extension azooKeyMacInputController {
                 let result = try await OpenAIClient.sendTextTransformRequest(
                     prompt: systemPrompt,
                     modelName: modelName,
-                    apiKey: apiKey
+                    apiKey: apiKey,
+                    apiEndpoint: Config.OpenAiApiEndpoint().value
                 )
 
                 await MainActor.run {
@@ -380,7 +381,8 @@ extension azooKeyMacInputController {
         let result = try await OpenAIClient.sendTextTransformRequest(
             prompt: systemPrompt,
             modelName: modelName,
-            apiKey: apiKey
+            apiKey: apiKey,
+            apiEndpoint: Config.OpenAiApiEndpoint().value
         )
 
         await MainActor.run {

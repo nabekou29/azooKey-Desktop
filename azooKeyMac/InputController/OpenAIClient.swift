@@ -260,8 +260,17 @@ enum OpenAIError: LocalizedError {
 // OpenAI APIクライアント
 enum OpenAIClient {
     // APIリクエストを送信する静的メソッド
-    static func sendRequest(_ request: OpenAIRequest, apiKey: String, logger: ((String) -> Void)? = nil) async throws -> [String] {
-        guard let url = URL(string: "https://api.openai.com/v1/chat/completions") else {
+    static func sendRequest(_ request: OpenAIRequest, apiKey: String, apiEndpoint: String? = nil, logger: ((String) -> Void)? = nil) async throws -> [String] {
+        let configEndpoint = Config.OpenAiApiEndpoint().value
+        let endpoint = if let apiEndpoint = apiEndpoint, !apiEndpoint.isEmpty {
+            apiEndpoint
+        } else if !configEndpoint.isEmpty {
+            configEndpoint
+        } else {
+            Config.OpenAiApiEndpoint.default
+        }
+
+        guard let url = URL(string: endpoint) else {
             throw OpenAIError.invalidURL
         }
 
@@ -339,8 +348,17 @@ enum OpenAIClient {
     }
 
     // Simple text transformation method for AI Transform feature
-    static func sendTextTransformRequest(prompt: String, modelName: String, apiKey: String) async throws -> String {
-        guard let url = URL(string: "https://api.openai.com/v1/chat/completions") else {
+    static func sendTextTransformRequest(prompt: String, modelName: String, apiKey: String, apiEndpoint: String? = nil) async throws -> String {
+        let configEndpoint = Config.OpenAiApiEndpoint().value
+        let endpoint = if let apiEndpoint = apiEndpoint, !apiEndpoint.isEmpty {
+            apiEndpoint
+        } else if !configEndpoint.isEmpty {
+            configEndpoint
+        } else {
+            Config.OpenAiApiEndpoint.default
+        }
+
+        guard let url = URL(string: endpoint) else {
             throw OpenAIError.invalidURL
         }
 

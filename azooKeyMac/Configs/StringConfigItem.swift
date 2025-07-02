@@ -67,6 +67,21 @@ extension Config {
         static var key: String = "dev.ensan.inputmethod.azooKeyMac.preference.OpenAiModelName"
     }
 
+    /// OpenAI API エンドポイント
+    struct OpenAiApiEndpoint: StringConfigItem {
+        static let `default` = "https://api.openai.com/v1/chat/completions"
+        static var key: String = "dev.ensan.inputmethod.azooKeyMac.preference.OpenAiApiEndpoint"
+        
+        var value: String {
+            get {
+                UserDefaults.standard.string(forKey: Self.key) ?? Self.default
+            }
+            nonmutating set {
+                UserDefaults.standard.set(newValue, forKey: Self.key)
+            }
+        }
+    }
+
     /// プロンプト履歴（JSON形式で保存）
     struct PromptHistory: StringConfigItem {
         static var key: String = "dev.ensan.inputmethod.azooKeyMac.preference.PromptHistory"
