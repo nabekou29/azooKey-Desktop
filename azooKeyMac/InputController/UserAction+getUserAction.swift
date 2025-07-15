@@ -53,6 +53,14 @@ extension UserAction {
             } else {
                 return .unknown
             }
+        case 0x2E: // Control + m
+            if event.modifierFlags.contains(.control) {
+                return .enter
+            } else if let text = event.characters, isPrintable(text) {
+                return .input(keyMap(text))
+            } else {
+                return .unknown
+            }
         case 0x2D: // Control + n
             if event.modifierFlags.contains(.control) {
                 return .navigation(.down)
