@@ -99,9 +99,14 @@ extension Config {
         }
 
         static let `default`: Value = .init(items: [
-            .init(word: "azooKey", reading: "あずーきー", hint: "アプリ")
+            .init(word: "azooKey", reading: "あずーきー", hint: "アプリ"),
+            .init(word: #"<date format="yyyy/MM/dd" type="western" language="ja_JP" delta="0" deltaunit="1">"#, reading: "きょう", hint: "日付"),
+            .init(word: #"<date format="yyyy-MM-dd" type="western" language="ja_JP" delta="0" deltaunit="1">"#, reading: "きょう", hint: "日付"),
+            .init(word: #"<date format="HH:mm" type="western" language="ja_JP" delta="0" deltaunit="1">"#, reading: "いま", hint: "時刻"),
+            .init(word: #"<date format="yyyy/MM/dd'\s'HH:mm" type="western" language="ja_JP" delta="0" deltaunit="1">"#, reading: "なう", hint: "日時"),
+            .init(word: #"<date format="yyyy-MM-dd'T'HH:mm:ss+09:00" type="western" language="ja_JP" delta="0" deltaunit="1">"#, reading: "なう", hint: "日時")
         ])
-        static let key: String = "dev.ensan.inputmethod.azooKeyMac.preference.user_dictionary_temporal2"
+        static let key: String = "dev.nabekou29.inputmethod.azooKeyMac.preference.user_dictionary_temporal2"
     }
 
     struct SystemUserDictionary: CustomCodableConfigItem {
