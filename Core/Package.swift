@@ -14,7 +14,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/azooKey/AzooKeyKanaKanjiConverter", from: "0.9.0", traits: ["Zenzai"]),
+        .package(url: "https://github.com/nabekou29/AzooKeyKanaKanjiConverter", branch: "azik", traits: ["Zenzai"]),
     ],
     targets: [
         .executableTarget(

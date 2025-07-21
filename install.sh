@@ -48,7 +48,7 @@ if [ "$DRY_RUN" = true ]; then
     echo "  pkill azooKeyMac"
     echo "Build completed successfully. Use without --dry-run to actually install."
 else
-    sudo rm -rf /Library/Input\ Methods/azooKeyMac.app
+    # sudo rm -rf /Library/Input\ Methods/azooKeyMac.app
     sudo cp -r build/archive.xcarchive/Products/Applications/azooKeyMac.app /Library/Input\ Methods/
     pkill azooKeyMac
 fi
