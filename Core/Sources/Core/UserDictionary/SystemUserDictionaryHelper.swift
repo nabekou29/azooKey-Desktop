@@ -4,7 +4,6 @@ import SQLite3
 import AppKit
 #endif
 
-
 /// macOSのユーザ辞書データを取り出すためのヘルパー
 ///
 /// - note:
@@ -13,7 +12,7 @@ import AppKit
 ///   sqlite3 -header -csv ~/Library/KeyboardServices/TextReplacements.db "SELECT ZSHORTCUT, ZPHRASE FROM ZTEXTREPLACEMENTENTRY"
 ///   ```
 public enum SystemUserDictionaryHelper: Sendable {
-#if canImport(AppKit)
+    #if canImport(AppKit)
     /// Delegate that allows the user to choose **only** a directory named "KeyboardServices".
     private final class KeyboardServicesDirectoryDelegate: NSObject, NSOpenSavePanelDelegate {
         private let allowedFolderName = "KeyboardServices"
@@ -21,7 +20,7 @@ public enum SystemUserDictionaryHelper: Sendable {
         /// Controls which items are enabled in the open panel.
         func panel(_ sender: Any, shouldEnable url: URL) -> Bool {
             // Enable selection only for the target directory itself.
-            return url.hasDirectoryPath && url.lastPathComponent == allowedFolderName
+            url.hasDirectoryPath && url.lastPathComponent == allowedFolderName
         }
 
         /// Validates the final URL when the user presses “Open”.
@@ -38,7 +37,7 @@ public enum SystemUserDictionaryHelper: Sendable {
 
     /// A shared delegate instance that remains alive for the lifetime of the open panel.
     @MainActor private static let keyboardServicesDelegate = KeyboardServicesDirectoryDelegate()
-#endif
+    #endif
 
     public struct Entry: Sendable {
         public let shortcut: String
@@ -60,9 +59,9 @@ public enum SystemUserDictionaryHelper: Sendable {
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
         panel.directoryURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/KeyboardServices")
-#if canImport(AppKit)
+        #if canImport(AppKit)
         panel.delegate = keyboardServicesDelegate
-#endif
+        #endif
 
         let response = panel.runModal()
         return response == .OK ? panel.url : nil
@@ -79,14 +78,14 @@ public enum SystemUserDictionaryHelper: Sendable {
 
         let url: URL
         if !FileManager.default.isReadableFile(atPath: dbPath) {
-#if canImport(AppKit)
+            #if canImport(AppKit)
             guard let authorizedURL = Self.promptUserForTextReplacementDirectory() else {
                 throw FetchError.fileNotReadable(dbPath)
             }
             url = authorizedURL
-#else
+            #else
             throw FetchError.fileNotReadable(dbPath)
-#endif
+            #endif
         } else {
             url = URL(fileURLWithPath: dbPath)
         }
