@@ -47,7 +47,6 @@ public enum SystemUserDictionaryHelper: Sendable {
 
     public enum FetchError: Sendable, Error {
         case fileNotExist(String)
-        case dataFeedingFailed(any Error)
         case failedToOpenDatabase(status: Int32)
         case failedToPrepareStatement(status: Int32)
     }
@@ -79,28 +78,13 @@ public enum SystemUserDictionaryHelper: Sendable {
         print("originalURL", originalURL)
 
         if !FileManager.default.isReadableFile(atPath: dbPath) {
-            let directoryURL: URL
 #if canImport(AppKit)
-            if let url = Self.promptUserForTextReplacementDirectory(), url.startAccessingSecurityScopedResource() {
-                directoryURL = url
-                originalURL = directoryURL.appendingPathComponent("TextReplacements.db")
-            } else {
+            guard let url = Self.promptUserForTextReplacementDirectory(), url.startAccessingSecurityScopedResource() else {
                 throw FetchError.fileNotExist(dbPath)
             }
 #else
             throw FetchError.fileNotExist(dbPath)
 #endif
-            let tempDirURL = FileManager.default.temporaryDirectory.appendingPathComponent("TextReplacementsCopy")
-            let tempDBURL = tempDirURL.appendingPathComponent("TextReplacements.db")
-            do {
-                if FileManager.default.fileExists(atPath: tempDirURL.path) {
-                    try FileManager.default.removeItem(at: tempDirURL)
-                }
-                try FileManager.default.copyItem(at: directoryURL, to: tempDirURL)
-                dbPath = tempDBURL.path
-            } catch {
-                throw FetchError.dataFeedingFailed(error)
-            }
         }
         var db: OpaquePointer?
         var entries: [Entry] = []
