@@ -77,23 +77,25 @@ public enum SystemUserDictionaryHelper: Sendable {
         print("dbPath", dbPath)
 
         let url: URL
+        let needStop: Bool
         if !FileManager.default.isReadableFile(atPath: dbPath) {
             #if canImport(AppKit)
-            guard let authorizedURL = Self.promptUserForTextReplacementDirectory() else {
+            guard let authorizedURL = Self.promptUserForTextReplacementDirectory(), authorizedURL.startAccessingSecurityScopedResource() else {
                 throw FetchError.fileNotReadable(dbPath)
             }
+            needStop = true
             url = authorizedURL
             #else
             throw FetchError.fileNotReadable(dbPath)
             #endif
         } else {
+            needStop = false
             url = URL(fileURLWithPath: dbPath)
         }
-        guard url.startAccessingSecurityScopedResource() else {
-            throw FetchError.fileNotReadable(dbPath)
-        }
         defer {
-            url.stopAccessingSecurityScopedResource()
+            if needStop {
+                url.stopAccessingSecurityScopedResource()
+            }
         }
 
         var db: OpaquePointer?
