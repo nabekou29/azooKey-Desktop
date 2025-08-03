@@ -47,6 +47,7 @@ public enum SystemUserDictionaryHelper: Sendable {
 
     public enum FetchError: Sendable, Error {
         case fileNotExist(String)
+        case fileNotReadable(String)
         case failedToOpenDatabase(status: Int32)
         case failedToPrepareStatement(status: Int32)
     }
@@ -74,20 +75,18 @@ public enum SystemUserDictionaryHelper: Sendable {
             throw .fileNotExist(dbPath)
         }
         // 事前に取得を試みる
-        var originalURL = URL(fileURLWithPath: dbPath)
-        print("originalURL", originalURL)
+        print("dbPath", dbPath)
 
         if !FileManager.default.isReadableFile(atPath: dbPath) {
 #if canImport(AppKit)
             guard let url = Self.promptUserForTextReplacementDirectory(), url.startAccessingSecurityScopedResource() else {
-                throw FetchError.fileNotExist(dbPath)
+                throw FetchError.fileNotReadable(dbPath)
             }
 #else
-            throw FetchError.fileNotExist(dbPath)
+            throw FetchError.fileNotReadable(dbPath)
 #endif
         }
         var db: OpaquePointer?
-        var entries: [Entry] = []
 
         let openStatus = sqlite3_open_v2(dbPath, &db, SQLITE_OPEN_READONLY, nil)
         guard openStatus == SQLITE_OK else {
@@ -112,6 +111,7 @@ public enum SystemUserDictionaryHelper: Sendable {
             sqlite3_finalize(statement)
         }
 
+        var entries: [Entry] = []
         while sqlite3_step(statement) == SQLITE_ROW {
             if let shortcutC = sqlite3_column_text(statement, 0),
                let phraseC = sqlite3_column_text(statement, 1) {
