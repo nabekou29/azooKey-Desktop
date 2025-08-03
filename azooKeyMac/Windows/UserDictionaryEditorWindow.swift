@@ -12,7 +12,7 @@ struct UserDictionaryEditorWindow: View {
     @ConfigState private var userDictionary = Config.UserDictionary()
 
     @State private var editTargetID: UUID?
-    @State private var undoItem: Config.UserDictionary.Item?
+    @State private var undoItem: Config.UserDictionaryEntry?
 
     @ViewBuilder
     private func helpButton(helpContent: LocalizedStringKey, isPresented: Binding<Bool>) -> some View {
@@ -71,7 +71,7 @@ struct UserDictionaryEditorWindow: View {
                 HStack {
                     Spacer()
                     Button("追加", systemImage: "plus") {
-                        let newItem = Config.UserDictionary.Item(word: "", reading: "", hint: nil)
+                        let newItem = Config.UserDictionaryEntry(word: "", reading: "", hint: nil)
                         self.userDictionary.value.items.append(newItem)
                         self.editTargetID = newItem.id
                         self.undoItem = nil

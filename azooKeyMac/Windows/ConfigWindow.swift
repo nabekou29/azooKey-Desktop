@@ -18,6 +18,7 @@ struct ConfigWindow: View {
     @ConfigState private var inferenceLimit = Config.ZenzaiInferenceLimit()
     @ConfigState private var debugWindow = Config.DebugWindow()
     @ConfigState private var userDictionary = Config.UserDictionary()
+    @ConfigState private var systemUserDictionary = Config.SystemUserDictionary()
 
     @State private var zenzaiHelpPopover = false
     @State private var zenzaiProfileHelpPopover = false
@@ -25,6 +26,12 @@ struct ConfigWindow: View {
     @State private var openAiApiKeyPopover = false
     @State private var connectionTestInProgress = false
     @State private var connectionTestResult: String?
+    @State private var systemUserDictionaryUpdateMessage: SystemUserDictionaryUpdateMessage?
+
+    private enum SystemUserDictionaryUpdateMessage {
+        case error(any Error)
+        case successfulUpdate
+    }
 
     private func getErrorMessage(for error: OpenAIError) -> String {
         switch error {
@@ -168,8 +175,52 @@ struct ConfigWindow: View {
                     Toggle("「、」「。」の代わりに「，」「．」を入力", isOn: $typeCommaAndPeriod)
                     Toggle("スペースは常に半角を入力", isOn: $typeHalfSpace)
                     Divider()
-                    Button("ユーザ辞書を編集する") {
-                        (NSApplication.shared.delegate as? AppDelegate)!.openUserDictionaryEditorWindow()
+                    LabeledContent {
+                        HStack {
+                            Button("編集") {
+                                (NSApplication.shared.delegate as? AppDelegate)!.openUserDictionaryEditorWindow()
+                            }
+                            Spacer()
+                            Text("\(self.userDictionary.value.items.count)件のアイテム")
+                        }
+                    } label: {
+                        Text("azooKeyユーザ辞書")
+                    }
+                    LabeledContent {
+                        Button("読み込む") {
+                            do {
+                                let systemUserDictionaryEntries = try SystemUserDictionaryHelper.fetchEntries()
+                                self.systemUserDictionary.value.items = systemUserDictionaryEntries.map {
+                                    .init(word: $0.phrase, reading: $0.shortcut)
+                                }
+                                self.systemUserDictionary.value.lastUpdate = .now
+                                self.systemUserDictionaryUpdateMessage = .successfulUpdate
+                            } catch {
+                                self.systemUserDictionaryUpdateMessage = .error(error)
+                            }
+                        }
+                        Button("リセット") {
+                            self.systemUserDictionary.value.lastUpdate = nil
+                            self.systemUserDictionary.value.items = []
+                            self.systemUserDictionaryUpdateMessage = nil
+                        }
+                        Spacer()
+                        switch self.systemUserDictionaryUpdateMessage {
+                        case .none:
+                            if let updated = self.systemUserDictionary.value.lastUpdate {
+                                let date = updated.formatted(date: .omitted, time: .omitted)
+                                Text("最終更新: \(updated) / \(self.systemUserDictionary.value.items.count)件のアイテム")
+                            } else {
+                                Text("未設定")
+                            }
+                        case .error(let error):
+                            Text("読み込みエラー: \(error.localizedDescription)")
+                        case .successfulUpdate:
+                            Text("読み込みに成功しました / \(self.systemUserDictionary.value.items.count)件のアイテム")
+                        }
+
+                    } label: {
+                        Text("システムのユーザ辞書")
                     }
                     Divider()
                     Toggle("（開発者用）デバッグウィンドウを有効化", isOn: $debugWindow)
