@@ -141,7 +141,7 @@ extension UserAction {
             } else {
                 return .unknown
             }
-        case 36: // Enter
+        case 0x24, 0x4C: // Enter (0x24) and Numpad Enter (0x4C)
             return .enter
         case 48: // Tab
             return .tab
@@ -212,6 +212,15 @@ extension UserAction {
             return .navigation(.down)
         case 126: // Up
             return .navigation(.up)
+        case 0x4B: // Numpad Slash
+            return .input("/")
+        case 0x5F: // Numpad Comma
+            return .input(",")
+        case 0x41: // Numpad Period
+            return .input(".")
+        case 0x73, 0x77, 0x74, 0x79, 0x75, 0x47:
+            // Numpadでそれぞれ「入力先頭にカーソルを移動」「入力末尾にカーソルを移動」「変換候補欄を1ページ戻る」「変換候補欄を1ページ進む」「順方向削除」「入力全消し（より強いエスケープ）」に対応するが、サポート外の動作として明示的に無効化
+            return .unknown
         case 18, 19, 20, 21, 23, 22, 26, 28, 25, 29:
             if !event.modifierFlags.contains(.shift) && !event.modifierFlags.contains(.option) {
                 let number: UserAction.Number = [
