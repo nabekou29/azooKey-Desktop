@@ -19,6 +19,9 @@ final class SegmentsManager {
     private var userDictionary: Config.UserDictionary.Value {
         Config.UserDictionary().value
     }
+    private var systemUserDictionary: Config.SystemUserDictionary.Value {
+        Config.SystemUserDictionary().value
+    }
     private var zenzaiPersonalizationLevel: Config.ZenzaiPersonalizationLevel.Value {
         Config.ZenzaiPersonalizationLevel().value
     }
@@ -329,10 +332,17 @@ final class SegmentsManager {
             return
         }
         // ユーザ辞書情報の更新
-        self.kanaKanjiConverter.sendToDicdataStore(.importDynamicUserDict(userDictionary.items.map {
+        var userDictionary: [DicdataElement] = userDictionary.items.map {
             .init(word: $0.word, ruby: $0.reading.toKatakana(), cid: CIDData.固有名詞.cid, mid: MIDData.一般.mid, value: -5)
-        }))
-        self.appendDebugMessage("userDictionaryCount: \(self.userDictionary.items.count)")
+        }
+        self.appendDebugMessage("userDictionaryCount: \(userDictionary.count)")
+        let systemUserDictionary: [DicdataElement] = systemUserDictionary.items.map {
+            .init(word: $0.word, ruby: $0.reading.toKatakana(), cid: CIDData.固有名詞.cid, mid: MIDData.一般.mid, value: -5)
+        }
+        self.appendDebugMessage("systemUserDictionaryCount: \(systemUserDictionary.count)")
+        userDictionary.append(contentsOf: consume systemUserDictionary)
+
+        self.kanaKanjiConverter.sendToDicdataStore(.importDynamicUserDict(consume userDictionary))
 
         let prefixComposingText = self.composingText.prefixToCursorPosition()
         let leftSideContext = forcedLeftSideContext ?? self.getCleanLeftSideContext(maxCount: 30)
