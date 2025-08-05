@@ -6,7 +6,7 @@
 
 ## 動作環境
 
-macOS 14とmacOS 15で動作確認しています。macOS 13でも利用できますが、動作は検証していません。
+macOS 15で動作確認しています。macOS 14およびmacOS 26でも利用できますが、動作は検証していません。
 
 ## リリース版インストール
 
@@ -25,7 +25,7 @@ macOS 14とmacOS 15で動作確認しています。macOS 13でも利用でき�
 brew install azooKey
 ```
 この場合も上記のログアウト・再ログイン後の設定は必要です。
-アップグレードは以下のコマンドで実行できます。
+アップグレードは以下のコマンドで実行できますが、再起動が必要になることがあります。
 
 ```bash
 brew upgrade azooKey
@@ -48,17 +48,17 @@ GitHub Sponsorsをご利用ください。
   * 履歴学習機能
   * ユーザ辞書機能
   * 個人最適化システム「[Tuner](https://github.com/azooKey/Tuner)」との連携機能
-
-* ライブ変換
 * LLMによる「いい感じ変換」機能
-* その他の
+* ライブ変換
+* AZIKのネイティブサポート
+
 
 ## 開発ガイド
 
 コントリビュート歓迎です！！
 
 ### 想定環境
-* macOS 14+
+* macOS 15+
 * Xcode 16+
 * Git LFS導入済み
 * SwiftLint導入済み
@@ -101,20 +101,19 @@ git submodule update --init
 ### pkgファイルの作成
 `pkgbuild.sh`によって配布用のdmgファイルを作成できます。`build/azooKeyMac.app` としてDeveloper IDで署名済みの.appを配置してください。
 
-### TODO
-* 予測変換を表示する
-* CIを増やす
-  * アルファ版を自動リリースする
-* 「いい感じ変換」の改良
-* 「Tuner」との相互運用性の向上
+### v1.0リリースに向けて
+[meta: v1.0のリリースに向けたロードマップ（#181）](https://github.com/azooKey/azooKey-Desktop/issues/181)をご覧ください．
 
-### Future Direction
+## Community Forks
 
-* WindowsとLinuxもサポートする
-  * @7ka-Hiira さんによる[fcitx5-hazkey](https://github.com/7ka-Hiira/fcitx5-hazkey)もご覧ください
-  * @fkunn1326 さんによる[azooKey-Windows](https://github.com/fkunn1326/azooKey-Windows)もご覧ください
+### [fcitx5-hazkey](https://github.com/7ka-Hiira/fcitx5-hazkey)
+@7ka-Hiira さんによるLinux系OS向けのクライアント実装です。
 
-* iOS版のazooKeyと学習や設定を同期する
+### [azooKey-Windows](https://github.com/fkunn1326/azooKey-Windows)
+@fkunn1326 さんによるWindows向けクライアント実装です。
+
+### [azoo-key-skkserv](https://github.com/gitusp/azoo-key-skkserv)
+@gitusp さんによるSKKクライアント向けのSKKサーバ実装です。macOS向けGUIアプリケーションを含みます。
 
 ## Reference
 
