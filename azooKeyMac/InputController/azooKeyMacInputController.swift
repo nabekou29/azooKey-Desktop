@@ -359,10 +359,10 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
         client.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.US")
         switch language {
         case .english:
-            client.selectMode("dev.ensan.inputmethod.azooKeyMac.Roman")
+            client.selectMode("dev.nabekou29.inputmethod.azooKeyMac.Roman")
             self.segmentsManager.stopJapaneseInput()
         case .japanese:
-            client.selectMode("dev.ensan.inputmethod.azooKeyMac.Japanese")
+            client.selectMode("dev.nabekou29.inputmethod.azooKeyMac.Japanese")
         }
     }
 
