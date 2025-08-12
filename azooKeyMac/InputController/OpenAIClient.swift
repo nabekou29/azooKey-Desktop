@@ -370,11 +370,26 @@ enum OpenAIClient {
         let body: [String: Any] = [
             "model": modelName,
             "messages": [
-                ["role": "system", "content": "You are a helpful assistant that transforms text according to user instructions."],
+                ["role": "system", "content": "You are a helpful assistant that transforms text according to user instructions. Return only the transformed text as a JSON object with a 'result' field."],
                 ["role": "user", "content": prompt]
             ],
-            "max_tokens": 150,
-            "temperature": 0.7
+            "response_format": [
+                "type": "json_schema",
+                "json_schema": [
+                    "name": "TextTransformResponse",
+                    "schema": [
+                        "type": "object",
+                        "properties": [
+                            "result": [
+                                "type": "string",
+                                "description": "The transformed text"
+                            ]
+                        ],
+                        "required": ["result"],
+                        "additionalProperties": false
+                    ]
+                ]
+            ]
         ]
 
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -392,17 +407,24 @@ enum OpenAIClient {
             throw OpenAIError.invalidResponseStatus(code: httpResponse.statusCode, body: responseBody)
         }
 
-        // Parse response data
+        // Parse response data using similar approach as sendRequest
         let jsonObject = try JSONSerialization.jsonObject(with: data)
         guard let jsonDict = jsonObject as? [String: Any],
               let choices = jsonDict["choices"] as? [[String: Any]],
               let firstChoice = choices.first,
               let message = firstChoice["message"] as? [String: Any],
-              let content = message["content"] as? String else {
+              let contentString = message["content"] as? String else {
             throw OpenAIError.invalidResponseStructure(jsonObject)
         }
 
-        return content.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Parse the structured JSON response
+        guard let contentData = contentString.data(using: .utf8),
+              let parsedContent = try JSONSerialization.jsonObject(with: contentData) as? [String: Any],
+              let result = parsedContent["result"] as? String else {
+            throw OpenAIError.parseError("Failed to parse structured response")
+        }
+
+        return result.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 
