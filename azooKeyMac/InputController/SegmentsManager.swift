@@ -126,7 +126,7 @@ final class SegmentsManager {
     }
 
     private func options(leftSideContext: String? = nil, requestRichCandidates: Bool = false) -> ConvertRequestOptions {
-        .withDefaultDictionary(
+        .init(
             requireJapanesePrediction: false,
             requireEnglishPrediction: false,
             keyboardLanguage: .ja_JP,
@@ -135,6 +135,8 @@ final class SegmentsManager {
             learningType: Config.Learning().value.learningType,
             memoryDirectoryURL: self.azooKeyMemoryDir,
             sharedContainerURL: self.azooKeyMemoryDir,
+            textReplacer: .withDefaultEmojiDictionary(),
+            specialCandidateProviders: KanaKanjiConverter.defaultSpecialCandidateProviders,
             zenzaiMode: self.zenzaiMode(leftSideContext: leftSideContext, requestRichCandidates: requestRichCandidates),
             metadata: self.metadata
         )
@@ -155,15 +157,13 @@ final class SegmentsManager {
     @MainActor
     func activate() {
         self.shouldShowCandidateWindow = false
-        self.kanaKanjiConverter.sendToDicdataStore(.setRequestOptions(options()))
         self.zenzaiPersonalizationMode = self.getZenzaiPersonalizationMode()
     }
 
     @MainActor
     func deactivate() {
         self.kanaKanjiConverter.stopComposition()
-        self.kanaKanjiConverter.sendToDicdataStore(.setRequestOptions(options()))
-        self.kanaKanjiConverter.sendToDicdataStore(.closeKeyboard)
+        self.kanaKanjiConverter.commitUpdateLearningData()
         self.rawCandidates = nil
         self.didExperienceSegmentEdition = false
         self.lastOperation = .other
@@ -190,7 +190,7 @@ final class SegmentsManager {
         self.rawCandidates = nil
         self.didExperienceSegmentEdition = false
         self.lastOperation = .other
-        self.kanaKanjiConverter.sendToDicdataStore(.closeKeyboard)
+        self.kanaKanjiConverter.commitUpdateLearningData()
         self.shouldShowCandidateWindow = false
         self.selectionIndex = nil
     }
@@ -267,7 +267,7 @@ final class SegmentsManager {
     @MainActor
     func forgetMemory() {
         if let selectedCandidate {
-            self.kanaKanjiConverter.sendToDicdataStore(.forgetMemory(selectedCandidate))
+            self.kanaKanjiConverter.forgetMemory(selectedCandidate)
             self.appendDebugMessage("\(#function): forget \(selectedCandidate.data.map {$0.word})")
         }
     }
@@ -342,7 +342,7 @@ final class SegmentsManager {
         self.appendDebugMessage("systemUserDictionaryCount: \(systemUserDictionary.count)")
         userDictionary.append(contentsOf: consume systemUserDictionary)
 
-        self.kanaKanjiConverter.sendToDicdataStore(.importDynamicUserDict(consume userDictionary))
+        self.kanaKanjiConverter.importDynamicUserDictionary(consume userDictionary)
 
         let prefixComposingText = self.composingText.prefixToCursorPosition()
         let leftSideContext = forcedLeftSideContext ?? self.getCleanLeftSideContext(maxCount: 30)
