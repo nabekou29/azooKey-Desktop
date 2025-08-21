@@ -39,7 +39,7 @@ let package = Package(
         .testTarget(
             name: "CoreTests",
             dependencies: ["Core"],
-            swiftSettings: [.interoperabilityMode(.Cxx)],
+            swiftSettings: [.interoperabilityMode(.Cxx)]
         )
     ]
 )

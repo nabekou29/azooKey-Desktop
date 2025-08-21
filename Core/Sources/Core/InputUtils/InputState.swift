@@ -181,7 +181,7 @@ public enum InputState: Sendable, Hashable {
             case .input(let string):
                 return (.commitMarkedTextAndAppendToMarkedText(string), .transition(.composing))
             case .number(let number):
-                return (.appendPieceToMarkedText(number.inputPiece), .transition(.composing))
+                return (.commitMarkedTextAndAppendPieceToMarkedText(number.inputPiece), .transition(.composing))
             case .backspace:
                 return (.removeLastMarkedText, .transition(.composing))
             case .enter:
@@ -283,7 +283,7 @@ public enum InputState: Sendable, Hashable {
                 case .one, .two, .three, .four, .five, .six, .seven, .eight, .nine:
                     return (.selectNumberCandidate(num.intValue), .basedOnSubmitCandidate(ifIsEmpty: .none, ifIsNotEmpty: .previewing))
                 case .zero, .shiftZero:
-                    return (.submitSelectedCandidateAndAppendPieceToMarkedText(num.inputPiece), .transition(.composing))
+                    return (.commitMarkedTextAndAppendPieceToMarkedText(num.inputPiece), .transition(.composing))
                 }
             case .editSegment(let count):
                 return (.editSegment(count), .transition(.selecting))

@@ -241,17 +241,12 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
             let text = self.segmentsManager.commitMarkedText(inputState: self.inputState)
             client.insertText(text, replacementRange: NSRange(location: NSNotFound, length: 0))
             self.segmentsManager.insertAtCursorPosition(string, inputStyle: self.inputStyle)
+        case .commitMarkedTextAndAppendPieceToMarkedText(let piece):
+            let text = self.segmentsManager.commitMarkedText(inputState: self.inputState)
+            client.insertText(text, replacementRange: NSRange(location: NSNotFound, length: 0))
+            self.segmentsManager.insertAtCursorPosition(piece: piece, inputStyle: self.inputStyle)
         case .submitSelectedCandidate:
             self.submitSelectedCandidate()
-        case .submitSelectedCandidateAndAppendToMarkedText(let string):
-            self.submitSelectedCandidate()
-            self.segmentsManager.insertAtCursorPosition(string, inputStyle: self.inputStyle)
-        case .submitSelectedCandidateAndAppendPieceToMarkedText(let piece):
-            self.submitSelectedCandidate()
-            self.segmentsManager.insertAtCursorPosition(piece: piece, inputStyle: self.inputStyle)
-        case .submitSelectedCandidateAndEnterFirstCandidatePreviewMode:
-            self.submitSelectedCandidate()
-            self.segmentsManager.requestSetCandidateWindowState(visible: false)
         case .removeLastMarkedText:
             self.segmentsManager.deleteBackwardFromCursorPosition()
             self.segmentsManager.requestResettingSelection()
