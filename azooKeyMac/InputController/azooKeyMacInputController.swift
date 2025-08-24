@@ -204,6 +204,10 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
             .roman2kana
         case .defaultAZIK:
             .mapped(id: .defaultAZIK)
+        case .defaultKanaUS:
+            .mapped(id: .defaultKanaUS)
+        case .defaultKanaJIS:
+            .mapped(id: .defaultKanaJIS)
         }
     }
 
@@ -224,6 +228,8 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
             self.segmentsManager.update(requestRichCandidates: true)
         case .appendToMarkedText(let string):
             self.segmentsManager.insertAtCursorPosition(string, inputStyle: self.inputStyle)
+        case .appendPieceToMarkedText(let piece):
+            self.segmentsManager.insertAtCursorPosition(piece: piece, inputStyle: self.inputStyle)
         case .insertWithoutMarkedText(let string):
             client.insertText(string, replacementRange: NSRange(location: NSNotFound, length: 0))
         case .editSegment(let count):
@@ -235,14 +241,12 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
             let text = self.segmentsManager.commitMarkedText(inputState: self.inputState)
             client.insertText(text, replacementRange: NSRange(location: NSNotFound, length: 0))
             self.segmentsManager.insertAtCursorPosition(string, inputStyle: self.inputStyle)
+        case .commitMarkedTextAndAppendPieceToMarkedText(let piece):
+            let text = self.segmentsManager.commitMarkedText(inputState: self.inputState)
+            client.insertText(text, replacementRange: NSRange(location: NSNotFound, length: 0))
+            self.segmentsManager.insertAtCursorPosition(piece: piece, inputStyle: self.inputStyle)
         case .submitSelectedCandidate:
             self.submitSelectedCandidate()
-        case .submitSelectedCandidateAndAppendToMarkedText(let string):
-            self.submitSelectedCandidate()
-            self.segmentsManager.insertAtCursorPosition(string, inputStyle: self.inputStyle)
-        case .submitSelectedCandidateAndEnterFirstCandidatePreviewMode:
-            self.submitSelectedCandidate()
-            self.segmentsManager.requestSetCandidateWindowState(visible: false)
         case .removeLastMarkedText:
             self.segmentsManager.deleteBackwardFromCursorPosition()
             self.segmentsManager.requestResettingSelection()
