@@ -3,7 +3,7 @@ import KanaKanjiConverterModule
 
 public enum InputState: Sendable, Hashable {
     case none
-    case deadKeyComposition(String)
+    case attachDiacritic(String)
     case composing
     case previewing
     case selecting
@@ -66,9 +66,9 @@ public enum InputState: Sendable, Hashable {
                     // 連結する
                     return (.insertWithoutMarkedText(inputPiecesToString(string)), .fallthrough)
                 }
-            case .deadKey(let deadKeyChar):
+            case .deadKey(let diacritic):
                 if inputLanguage == .english {
-                    return (.transitionToDeadKeyComposition(deadKeyChar), .fallthrough)
+                    return (.consume, .transition(.attachDiacritic(diacritic)))
                 } else {
                     return (.fallthrough, .fallthrough)
                 }
@@ -98,29 +98,29 @@ public enum InputState: Sendable, Hashable {
             case .unknown, .navigation, .backspace, .enter, .escape, .function, .editSegment, .tab, .forget, .transformSelectedText:
                 return (.fallthrough, .fallthrough)
             }
-        case .deadKeyComposition(let deadKeyChar):
+        case .attachDiacritic(let diacritic):
             switch userAction {
             case .input(let string):
                 let string = self.inputPiecesToString(string)
-                if let result = DeadKeyComposer.combine(deadKey: deadKeyChar, with: string, shift: event.modifierFlags.contains(.shift)) {
-                    return (.commitMarkedTextAndReplaceWith(result), .transition(.none))
+                if let result = DiacriticAttacher.attach(deadKeyChar: diacritic, with: string, shift: event.modifierFlags.contains(.shift)) {
+                    return (.insertWithoutMarkedText(result), .transition(.none))
                 } else {
-                    return (.commitMarkedTextAndThenInsert(deadKeyChar + string), .transition(.none))
+                    return (.insertWithoutMarkedText(diacritic + string), .transition(.none))
                 }
-            case .deadKey(let newDeadKeyChar):
-                return (.insertDiacriticAndTransition(deadKeyChar, .deadKeyComposition(newDeadKeyChar)), .fallthrough)
+            case .deadKey(let newDiacritic):
+                return (.insertWithoutMarkedText(diacritic), .transition(.attachDiacritic(newDiacritic)))
             case .backspace, .escape:
                 return (.stopComposition, .transition(.none))
             case .かな:
-                return (.stopCompositionAndSelectInputLanguage(.japanese), .transition(.none))
+                return (.selectInputLanguage(.japanese), .transition(.none))
             case .function:
                 return (.consume, .fallthrough)
             case .enter:
-                return (.commitMarkedTextAndThenInsert(deadKeyChar + "\n"), .transition(.none))
+                return (.insertWithoutMarkedText(diacritic + "\n"), .transition(.none))
             case .tab:
-                return (.commitMarkedTextAndThenInsert(deadKeyChar + "\t"), .transition(.none))
-            default:
-                return (.commitMarkedTextAndThenInsert(deadKeyChar), .transition(.none))
+                return (.insertWithoutMarkedText(diacritic + "\t"), .transition(.none))
+            case .unknown, .number, .space, .英数, .navigation, .editSegment, .suggest, .forget, .transformSelectedText:
+                return (.insertWithoutMarkedText(diacritic), .transition(.none))
             }
         case .composing:
             switch userAction {

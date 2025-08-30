@@ -326,24 +326,6 @@ class azooKeyMacInputController: IMKInputController { // swiftlint:disable:this 
         case .transformSelectedText(let selectedText, let prompt):
             self.segmentsManager.appendDebugMessage("Executing transformSelectedText with text: '\(selectedText)' and prompt: '\(prompt)'")
             self.transformSelectedText(selectedText: selectedText, prompt: prompt)
-        // DeadKey handling
-        case .transitionToDeadKeyComposition(let deadKeyChar):
-            self.inputState = .deadKeyComposition(deadKeyChar)
-        case .insertDiacriticAndTransition(let string, let newState):
-            client.insertText(string, replacementRange: NSRange(location: NSNotFound, length: 0))
-            self.inputState = newState
-        case .commitMarkedTextAndReplaceWith(let string):
-            client.insertText(string, replacementRange: NSRange(location: NSNotFound, length: 0))
-            self.segmentsManager.stopComposition()
-        case .commitMarkedTextAndThenInsert(let stringToInsert):
-            let committedText = self.segmentsManager.commitMarkedText(inputState: self.inputState)
-            let textToInsert = committedText + stringToInsert
-            client.insertText(textToInsert, replacementRange: NSRange(location: NSNotFound, length: 0))
-            self.inputState = .none
-        case .stopCompositionAndSelectInputLanguage(let language):
-            self.segmentsManager.stopComposition()
-            self.inputLanguage = language
-            self.switchInputLanguage(language, client: client)
         // MARK: 特殊ケース
         case .consume:
             // 何もせず先に進む
