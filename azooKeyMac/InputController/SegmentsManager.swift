@@ -427,7 +427,7 @@ final class SegmentsManager {
 
     func getCurrentCandidateWindow(inputState: InputState) -> CandidateWindow {
         switch inputState {
-        case .none, .previewing, .replaceSuggestion:
+        case .none, .previewing, .replaceSuggestion, .attachDiacritic:
             return .hidden
         case .composing:
             if !self.liveConversionEnabled, let firstCandidate = self.rawCandidates?.mainResults.first {
@@ -445,8 +445,6 @@ final class SegmentsManager {
             } else {
                 return .hidden
             }
-        case .deadKeyComposition(let deadKeyChar):
-            return .hidden
         }
     }
 
@@ -559,13 +557,10 @@ final class SegmentsManager {
         suggestSelectionIndex = nil
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     func getCurrentMarkedText(inputState: InputState) -> MarkedText {
         switch inputState {
-        case .none:
+        case .none, .attachDiacritic:
             return MarkedText(text: [], selectionRange: .notFound)
-        case .deadKeyComposition(let deadKeyChar):
-            return MarkedText(text: [.init(content: self.composingText.convertTarget, focus: .focused)], selectionRange: .notFound)
         case .composing:
             let text = if self.lastOperation == .delete {
                 // 削除のあとは常にひらがなを示す

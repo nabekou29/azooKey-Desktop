@@ -35,17 +35,13 @@ extension UserAction {
         }
         // Diacritic processing
         if event.modifierFlags.contains(.option) && event.modifierFlags.isDisjoint(with: [.command, .control]) {
-            if let deadKeyInfo = DeadKeyComposer.deadKeyList[event.keyCode] {
+            if let diacritic = DiacriticAttacher.deadKeyList[event.keyCode] {
                 if event.modifierFlags.contains(.shift) {
                     // Shift + Option: insert diacritical mark only
-                    if let directChar = event.characters {
-                        return .input(directChar.map(InputPiece.character))
-                    } else {
-                        return .unknown
-                    }
+                    return event.characters.map { .input($0.map(InputPiece.character)) } ?? .unknown
                 } else {
                     // Option only: begin dead key sequence
-                    return .deadKey(deadKeyInfo.deadKeyChar)
+                    return .deadKey(diacritic)
                 }
             }
         }
